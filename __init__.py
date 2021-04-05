@@ -1,2 +1,2 @@
-from db import *
-from alchemy import *
+from .db import *
+from .alchemy import *

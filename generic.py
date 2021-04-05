@@ -2,8 +2,8 @@ import operator
 import functools
 import sqlalchemy as sa
 import pandas as pd
-import db
-import utils
+from . import db
+from . import utils
 
 
 class GenericMixin:

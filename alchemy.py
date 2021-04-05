@@ -2,10 +2,10 @@ import operator
 import functools
 import pandas as pd
 import sqlalchemy as sa
-import db
-import utils
-import generic
-import ops_mixin
+from . import db
+from . import utils
+from . import generic
+from . import ops_mixin
 
 
 def process_row(index, data):
