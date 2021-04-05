@@ -8,7 +8,7 @@ from . import generic
 from . import ops_mixin
 
 
-def process_row(index, data):
+def row_to_query(index, data):
     if not pd.api.types.is_list_like(index):
         index = (index,)
     if not pd.api.types.is_list_like(data):
@@ -172,7 +172,7 @@ class DataFrame(generic.GenericMixin, ops_mixin.OpsMixin):
             if optional:
                 return df
             raise TypeError("Must be a Pandas DataFrame")
-        query = sa.union_all(*[process_row(index, data)
+        query = sa.union_all(*[row_to_query(index, data)
                                for index, data in df.iterrows()])
         query.bind = db.metadata().bind
         index = pd.Index(df.index.names)
@@ -229,7 +229,7 @@ class Series(generic.GenericMixin):
             if optional:
                 return seq
             raise TypeError("Must be a Pandas Series")
-        query = sa.union_all(*[process_row(index, data)
+        query = sa.union_all(*[row_to_query(index, data)
                                for index, data in seq.iteritems()])
         query.bind = db.metadata().bind
         index = pd.Index(seq.index.names)
