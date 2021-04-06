@@ -4,6 +4,7 @@ import sqlalchemy as sa
 import pandas as pd
 from . import db
 from . import utils
+from . import indexer
 
 
 class GenericMixin:
@@ -40,6 +41,10 @@ class GenericMixin:
         if len(self._index) == 1:
             return pd.Index(data.scalars(), name=self._index[0])
         return pd.MultiIndex(data, names=self._index)
+
+    @property
+    def iat(self):
+        return indexer._iAtIndexer(self)
 
     def bool(self):
         if self.size != 1:

@@ -79,6 +79,20 @@ class DataFrame(generic.GenericMixin, ops_mixin.OpsMixin):
             else:
                 yield row[:len(self._index)], data
 
+    def _get_iat(self, row, col):
+        err = "index {} is out of bounds for axis 0 with size {}"
+        if col < 0:
+            col = len(self._columns) + col
+        if col < 0 or col >= len(self._columns):
+            raise IndexError(err.format(col, len(self._columns)))
+        row_count = len(self)
+        if row < 0:
+            row = row_count + row
+        if row < 0 or row >= row_count:
+            raise IndexError(err.format(row, row_count))
+        column = self._col_at(col)
+        return sa.select([column]).limit(1).offset(row).scalar()
+
     def _op(self, op, other, axis="columns", level=None,
             fill_value=None, reverse=False):
         def app_op(lhs, rhs):
@@ -207,6 +221,16 @@ class Series(generic.GenericMixin):
                 yield row[0], row[1]
             else:
                 yield row[:len(self._index)], row[-1]
+
+    def _get_iat(self, row):
+        row_count = len(self)
+        if row < 0:
+            row = row_count + row
+        if row < 0 or row >= row_count:
+            err = "index {} is out of bounds for axis 0 with size {}"
+            raise IndexError(err.format(row, row_count))
+        column = self._col_at(0)
+        return sa.select([column]).limit(1).offset(row).scalar()
 
     def to_pandas(self):
         index = []
