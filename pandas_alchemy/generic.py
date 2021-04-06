@@ -132,4 +132,4 @@ class GenericMixin:
         return index, idx, join_cond
 
     def _fetch(self):
-        return db.metadata().bind.execute(self._query)
+        return sa.select(self._query).execute()
