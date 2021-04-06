@@ -3,6 +3,7 @@ import pandas as pd
 import sqlalchemy as sa
 from . import db
 from . import utils
+from . import dialect
 from . import base
 from . import generic
 from . import ops_mixin
@@ -106,8 +107,9 @@ class DataFrame(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
                 return
             index, idx, join_cond = self._join_idx(other, level=level)
             cols = [app_op(c, other._col_at(0)) for c in self._cols()]
-            joined = self._cte.join(other._cte, join_cond, full=True)
-            self._cte = sa.select(idx + cols).select_from(joined).cte()
+            self._cte = dialect.CURRENT["full_outer_join"](
+                self._cte, other._cte, join_cond, idx + cols
+            ).cte()
             self._index = index
             return
         if isinstance(other, (DataFrame, pd.DataFrame)):

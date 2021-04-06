@@ -1,10 +1,16 @@
 import math
+import copy
+import sqlalchemy as sa
 
 
 AUGMENTATION = {}
+POLYFILL = {}
+CURRENT = None
 
 
 def augment_engine(engine):
+    global CURRENT
+    CURRENT = copy.copy(POLYFILL)
     for aug in AUGMENTATION.get(engine.name, []):
         aug(engine)
 
@@ -19,11 +25,37 @@ def augment(db_name):
     return decorator
 
 
+def polyfill(f):
+    POLYFILL[f.__name__] = f
+    return f
+
+
+def refill(name):
+    def decorator(f):
+        def refiller(engine):
+            CURRENT[name] = f
+        return refiller
+    return decorator
+
+
 def with_raw_connection(f):
     def raw_connection(engine):
         con = engine.raw_connection().connection
         return f(con)
     return raw_connection
+
+
+@polyfill
+def full_outer_join(lhs, rhs, cond, selects):
+    left = sa.select(selects).select_from(lhs.join(rhs, cond, isouter=True))
+    right = sa.select(selects).select_from(rhs.join(lhs, cond, isouter=True))
+    return sa.union_all(left, right.where(cond.is_(None)))
+
+
+@augment("postgresql")
+@refill("full_outer_join")
+def postgresql_full_outer_join(lhs, rhs, cond, selects):
+    return sa.select(selects).select_from(lhs.join(rhs, cond, full=True))
 
 
 @augment("sqlite")
@@ -32,4 +64,5 @@ def sqlite_floor_function(con):
     con.create_function("floor", 1, math.floor)
 
 
-__all__ = ["AUGMENTATION", "augment_engine", "augment", "with_raw_connection"]
+__all__ = ["AUGMENTATION", "POLYFILL", "CURRENT", "augment_engine",
+           "augment", "polyfill", "refill", "with_raw_connection"]
