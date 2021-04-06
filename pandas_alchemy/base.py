@@ -18,7 +18,8 @@ class BaseFrame:
         return list(self._cte.columns)[:len(self._index)]
 
     def _cols(self):
-        return list(self._cte.columns)[len(self._index):]
+        total = len(self._index) + len(self._columns)
+        return list(self._cte.columns)[len(self._index):total]
 
     def _idx_at(self, i):
         return self._cte.columns[i]
@@ -41,9 +42,8 @@ class BaseFrame:
 
     @utils.copied
     def _add_rowid(self):
-        rowid = sa.literal_column("ROW_NUMBER() OVER () - 1", sa.Integer)
         cte_columns = list(self._cte.columns)
-        cte_columns.append(rowid.label("i_rowid"))
+        cte_columns.append(sa.func.row_number().over() - 1)
         self._cte = sa.select(cte_columns).cte()
 
     def _join_cols(self, other_index, how="outer"):
@@ -57,12 +57,10 @@ class BaseFrame:
     def _paste_join(self, other, other_rowid=None):
         """ Join two BaseFrame on rowid. """
         self._add_rowid(inplace=True)
-        self_cols = list(self._cte.columns)
         if other_rowid is None:
             other = other._add_rowid()
-            other_cols = list(other._cte.columns)
-        else:
-            other_cols = list(other._cte.columns)
-            other_cols.append(other_rowid)
-        join_cond = self_cols[-1] == other_cols[-1]
-        return self_cols[:-1], other_cols[:-1], join_cond
+            other_rowid = other._cte.columns[-1]
+        total = len(self._index) + len(self._columns)
+        join_cond = self._cte.columns[total] == other_rowid
+        joined = self._cte.join(other._cte, join_cond)
+        return self, other, joined

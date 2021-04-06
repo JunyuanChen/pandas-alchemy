@@ -47,8 +47,8 @@ class DataFrame(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
 
     def __getattr__(self, name):
         try:
-            col = self._columns.get_loc(name)
-            query = sa.select(self._idx() + [col])
+            col = self.__dict__['_columns'].get_loc(name)
+            query = sa.select(self._idx() + [self._col_at(col)])
             return Series(self._index, pd.Index([name]), query.cte(), name)
         except KeyError:
             return self.__getattribute__(name)
@@ -120,11 +120,10 @@ class DataFrame(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
                 raise ValueError(err.format(num_rows, len(other)))
             other = Series.from_list(other)
             other_rowid = other._idx_at(0)
-            cols, (other,), join_cond = self._paste_join(other, other_rowid)
-            cols = [app_op(c, other) for c in self._cols()]
-            joined = self._cte.join(other._cte, join_cond)
-            query = sa.select(self._idx() + cols)
-            self._cte = query.select_from(joined).cte()
+            this, other, joined = self._paste_join(other, other_rowid)
+            cols = [app_op(c, other._col_at(0)) for c in this._cols()]
+            query = sa.select(this._idx() + cols).select_from(joined)
+            self._cte = query.cte()
             return
         err = "Cannot broadcast np.ndarray with operand of type {}"
         raise TypeError(err.format(type(other)))
@@ -186,8 +185,7 @@ class DataFrame(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
                        extend_existing=True, autoload=True)
         cols = [c.name for c in tbl.columns]
         if index is None:
-            sql = "ROW_NUMBER() OVER () - 1"
-            idx = [sa.literal_column(sql, sa.INTEGER).label("i_rowid")]
+            idx = [sa.func.row_number().over() - 1]
             index = pd.Index((None,))
         else:
             if not pd.api.types.is_list_like(index):
@@ -195,14 +193,14 @@ class DataFrame(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
             index = pd.Index(index)
             for i in index:
                 cols.pop(cols.index(i))
-            idx = [tbl.columns[i].label("i_{}".format(i)) for i in index]
+            idx = [tbl.columns[i].label(None) for i in index]
         if columns is None:
             columns = pd.Index(cols)
         else:
             columns = pd.Index(columns)
             for c in columns:
                 cols.index(c)
-        cols = [tbl.columns[i].label("c_{}".format(i)) for i in columns]
+        cols = [tbl.columns[i].label(None) for i in columns]
         query = sa.select(idx + cols)
         return DataFrame(index, columns, query.cte())
 
@@ -251,7 +249,7 @@ class Series(base.BaseFrame, generic.GenericMixin):
     @staticmethod
     def from_list(values, name=None):
         query = sa.union_all(*[sa.select([sa.literal(i), sa.literal(v)])
-                               for i, (v,) in enumerate(values)])
+                               for i, v in enumerate(values)])
         query.bind = db.metadata().bind
         index = pd.Index([None])
         columns = pd.Index([None])
