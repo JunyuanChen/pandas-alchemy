@@ -219,6 +219,17 @@ class Series(base.BaseFrame, generic.GenericMixin):
         for row in self._fetch():
             yield row[-1]
 
+    def _get_value(self, label, takeable=False):
+        if takeable:
+            row_count = len(self)
+            label = utils.wrap(label, row_count)
+            if label < 0 or label > row_count:
+                err = "index {} is out of bounds for axis 0 with size {}"
+                raise IndexError(err.format(label, row_count))
+            col = sa.select([self._col_at(0)])
+            return col.limit(1).offset(label).scalar()
+        raise NotImplementedError
+
     def to_pandas(self):
         index = []
         value = []
