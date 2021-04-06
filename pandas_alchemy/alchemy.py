@@ -192,6 +192,45 @@ class DataFrame(generic.GenericMixin, ops_mixin.OpsMixin):
         index = pd.Index(df.index.names)
         return DataFrame(index, df.columns, query)
 
+    @staticmethod
+    def from_table(table, schema=None, columns=None, index=None):
+        """
+        Load table from the database as a DataFrame.
+
+        If columns is not None, it is taken as an ordered list of
+        columns to be included in the DataFrame.
+
+        If index is a list-like object, it is taken as an ordered
+        list of columns whose values are the DataFrame's index.
+        Otherwise, if index is not None, it is taken as the name
+        of the column to become the DataFrame's index.
+        """
+        tbl = sa.Table(table, db.metadata(), schema=schema,
+                       extend_existing=True, autoload=True)
+        cols = [c.name for c in tbl.columns]
+        if index is None:
+            sql = "ROW_NUMBER() OVER () - 1"
+            idx_col = sa.column(sql, type_=sa.INTEGER, is_literal=True)
+            idx = utils.label_idx([idx_col])
+            index = pd.Index((None,))
+        else:
+            if pd.api.types.is_list_like(index):
+                index = pd.Index(index)
+            else:
+                index = pd.Index((index,))
+            for i in index:
+                cols.pop(cols.index(i))
+            idx = utils.label_idx([tbl.columns[i] for i in index])
+        if columns is None:
+            columns = pd.Index(cols)
+        else:
+            columns = pd.Index(columns)
+            for c in columns:
+                cols.index(c)
+        cols = utils.label_cols([tbl.columns[i] for i in columns])
+        query = sa.select(idx + cols)
+        return DataFrame(index, columns, query)
+
 
 class Series(generic.GenericMixin):
     ndim = 1
