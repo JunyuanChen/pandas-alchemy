@@ -26,7 +26,10 @@ def with_raw_connection(f):
     return raw_connection
 
 
-@augment('sqlite')
+@augment("sqlite")
 @with_raw_connection
 def sqlite_floor_function(con):
-    con.create_function('floor', 1, math.floor)
+    con.create_function("floor", 1, math.floor)
+
+
+__all__ = ["AUGMENTATION", "augment_engine", "augment", "with_raw_connection"]

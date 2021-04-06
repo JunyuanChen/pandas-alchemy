@@ -1,5 +1,5 @@
 class _iAtIndexer:
-    name = 'iat'
+    name = "iat"
 
     def __init__(self, obj):
         self.obj = obj
@@ -16,3 +16,6 @@ class _iAtIndexer:
     @property
     def ndim(self):
         return self.obj.ndim
+
+
+__all__ = ["_iAtIndexer"]

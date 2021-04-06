@@ -65,3 +65,6 @@ class GenericMixin:
     def _app(self, func):
         cols = [func(c) for c in self._cols()]
         self._cte = sa.select(self._idx() + cols).cte()
+
+
+__all__ = ["GenericMixin"]

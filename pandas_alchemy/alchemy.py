@@ -43,11 +43,11 @@ def dataframe_op(op, name=None, before=None, after=None):
 class DataFrame(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
     ndim = 2
     _AXIS_MAPPER = utils.merge(base.BaseFrame._AXIS_MAPPER,
-                               {1: 1, 'columns': 1})
+                               {1: 1, "columns": 1})
 
     def __getattr__(self, name):
         try:
-            col = self.__dict__['_columns'].get_loc(name)
+            col = self.__dict__["_columns"].get_loc(name)
             query = sa.select(self._idx() + [self._col_at(col)])
             return Series(self._index, pd.Index([name]), query.cte(), name)
         except KeyError:
@@ -80,7 +80,7 @@ class DataFrame(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
         raise NotImplementedError
 
     @utils.copied
-    def _op(self, op, other, axis='columns', level=None,
+    def _op(self, op, other, axis="columns", level=None,
             fill_value=None, reverse=False):
         axis = 1 if axis is None else self._get_axis(axis)
 
@@ -270,4 +270,4 @@ class Series(base.BaseFrame, generic.GenericMixin):
         return Series(index, columns, query.cte(), name)
 
 
-__all__ = ['DataFrame', 'Series']
+__all__ = ["DataFrame", "Series"]

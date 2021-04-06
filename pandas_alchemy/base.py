@@ -64,3 +64,6 @@ class BaseFrame:
         join_cond = self._cte.columns[total] == other_rowid
         joined = self._cte.join(other._cte, join_cond)
         return self, other, joined
+
+
+__all__ = ["BaseFrame"]
