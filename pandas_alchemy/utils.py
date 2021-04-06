@@ -1,18 +1,25 @@
-def col_at(i):
-    return "c_{}".format(i)
+import copy
+import functools
 
 
-def idx_at(i):
-    return "i_{}".format(i)
+def copied(f):
+    @functools.wraps(f)
+    def self_copied(self, *args, **kwargs):
+        inplace = kwargs.get("inplace")
+        if inplace:
+            del kwargs["inplace"]
+            return f(self, *args, **kwargs)
+        this = copy.copy(self)
+        result = f(this, *args, **kwargs)
+        return this if result is None else result
+    return self_copied
 
 
-def label_cols(cols):
-    return [cols[i].label(col_at(i)) for i in range(len(cols))]
+def merge(dict_1, dict_2):
+    result = copy.copy(dict_1)
+    result.update(dict_2)
+    return result
 
 
-def label_idx(idx):
-    return [idx[i].label(idx_at(i)) for i in range(len(idx))]
-
-
-def zip_indexers(length, *args):
-    return zip(*map(lambda x: range(length) if x is None else x, args))
+def wrap(value, bound):
+    return bound + value if value < 0 else value

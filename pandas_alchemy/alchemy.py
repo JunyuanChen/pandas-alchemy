@@ -1,21 +1,23 @@
 import operator
-import functools
 import pandas as pd
 import sqlalchemy as sa
 from . import db
 from . import utils
+from . import base
 from . import generic
 from . import ops_mixin
 
 
 def row_to_query(index, data):
     if not pd.api.types.is_list_like(index):
-        index = (index,)
+        index = [index]
+    else:
+        index = list(index)
     if not pd.api.types.is_list_like(data):
-        data = (data,)
-    idx = [sa.literal(i) for i in index]
-    cols = [sa.literal(c) for c in data]
-    return sa.select(utils.label_idx(idx) + utils.label_cols(cols))
+        data = [data]
+    else:
+        data = list(data)
+    return sa.select([sa.literal(v) for v in index + data])
 
 
 def dataframe_op(op, name=None, before=None, after=None):
@@ -38,117 +40,92 @@ def dataframe_op(op, name=None, before=None, after=None):
     return op_func, rop_func
 
 
-class DataFrame(generic.GenericMixin, ops_mixin.OpsMixin):
+class DataFrame(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
     ndim = 2
-
-    def __init__(self, index, columns, query):
-        if not isinstance(query, sa.sql.selectable.CTE):
-            query = query.cte()
-        self._index = index
-        self._columns = columns
-        self._query = query
-        self.columns = columns
+    _AXIS_MAPPER = utils.merge(base.BaseFrame._AXIS_MAPPER,
+                               {1: 1, 'columns': 1})
 
     def __getattr__(self, name):
         try:
             col = self._columns.get_loc(name)
-            cols = utils.label_cols([self._col_at(col)])
-            query = sa.select(self._idx() + cols)
-            return Series(self._index, pd.Index([name]), query)
+            query = sa.select(self._idx() + [col])
+            return Series(self._index, pd.Index([name]), query.cte(), name)
         except KeyError:
             return self.__getattribute__(name)
 
-    @staticmethod
-    def _normalize_axis(axis):
-        if axis in (0, "index"):
-            return 0
-        if axis in (1, "columns"):
-            return 1
-        err = "No axis named {} for object type DataFrame"
-        raise ValueError(err.format(axis))
-
     @property
-    def shape(self):
-        return len(self), len(self.columns)
+    def columns(self):
+        return self._columns
 
     def iterrows(self):
         for row in self._fetch():
-            data = pd.Series(row[len(self._index)], index=self.columns)
-            if len(self._index) == 1:
-                yield row[0], data
-            else:
+            data = pd.Series(row[len(self._index):], index=self._columns)
+            if self._is_mindex:
                 yield row[:len(self._index)], data
+            else:
+                yield row[0], data
 
     def _get_iat(self, row, col):
         err = "index {} is out of bounds for axis 0 with size {}"
-        if col < 0:
-            col = len(self._columns) + col
+        col = utils.wrap(col, len(self._columns))
         if col < 0 or col >= len(self._columns):
             raise IndexError(err.format(col, len(self._columns)))
         row_count = len(self)
-        if row < 0:
-            row = row_count + row
+        row = utils.wrap(row, row_count)
         if row < 0 or row >= row_count:
             raise IndexError(err.format(row, row_count))
-        column = self._col_at(col)
-        return sa.select([column]).limit(1).offset(row).scalar()
+        return sa.select([self._col_at(col)]).limit(1).offset(row).scalar()
 
-    def _op(self, op, other, axis="columns", level=None,
+    @utils.copied
+    def _op(self, op, other, axis='columns', level=None,
             fill_value=None, reverse=False):
+        axis = 1 if axis is None else self._get_axis(axis)
+
         def app_op(lhs, rhs):
             result = op(rhs, lhs) if reverse else op(lhs, rhs)
             if fill_value is None:
                 return result
             return sa.func.coalesce(result, fill_value)
-        axis = DataFrame._normalize_axis(axis)
+
         if pd.api.types.is_scalar(other):
             cols = [app_op(c, other) for c in self._cols()]
-            query = sa.select(self._idx() + utils.label_cols(cols))
-            return DataFrame(self._index, self.columns, query)
-        if axis == 1 and isinstance(other, (Series, pd.Series)):
-            joined = self.columns.join(other.index, how="outer",
-                                       level=level, return_indexers=True)
-            columns, self_idx, other_idx = joined
-            zipped = utils.zip_indexers(len(columns), self_idx, other_idx)
-            other = list(other)
-            cols = [app_op(self._col_at(i), other[j]) for i, j in zipped]
-            query = sa.select(self._idx() + utils.label_cols(cols))
-            return DataFrame(self._index, columns, query)
-        if axis == 0 and isinstance(other, (Series, pd.Series)):
+            self._cte = sa.select(self._idx() + cols).cte()
+            return
+        if isinstance(other, (Series, pd.Series)):
             other = Series.from_pandas(other, optional=True)
-            index, idx, join_cond = self._join(other, level=level)
-            cols = [app_op(c, other._col_at(0)) for c in self._cols()]
-            joined = self._query.join(other._query, join_cond, full=True)
-            selects = sa.select(utils.label_idx(idx) + utils.label_cols(cols))
-            return DataFrame(index, self.columns, selects.select_from(joined))
+            if axis == 1:
+                columns, idxers = self._join_cols(other.index)
+                other = list(other)
+                other.append(sa.sql.expression.Null())  # other[-1] => NULL
+                cols = [app_op(self._col_at(i), other[j]) for i, j in idxers]
+                self._cte = sa.select(self._idx() + cols).cte()
+                self._columns = columns
+                return
+            raise NotImplementedError
         if isinstance(other, (DataFrame, pd.DataFrame)):
-            other = DataFrame.from_pandas(other, optional=True)
-            index, idx, join_cond = self._join(other, level=level)
-            joined = self.columns.join(other.columns, how="outer",
-                                       level=level, return_indexers=True)
-            columns, self_idx, other_idx = joined
-            zipped = utils.zip_indexers(len(columns), self_idx, other_idx)
-            cols = [app_op(self._col_at(i), other._col_at(j))
-                    for i, j in zipped]
-            joined = self._query.join(other._query, join_cond, full=True)
-            selects = sa.select(utils.label_idx(idx) + utils.label_cols(cols))
-            return DataFrame(index, columns, selects.select_from(joined))
+            raise NotImplementedError
         if pd.api.types.is_list_like(other):
             other = list(other)
+            err = "Unable to coerce to Series, length must be {}: given {}"
             if axis == 1:
-                if len(other) != len(self.columns):
-                    err = ("Unable to coerce to Series, "
-                           "length must be {}: given {}")
-                    raise ValueError(err.format(len(self.columns), len(other)))
+                num_cols = len(self._columns)
+                if len(other) != num_cols:
+                    raise ValueError(err.format(num_cols, len(other)))
                 cols = [app_op(self._col_at(i), other[i])
-                        for i in range(len(self.columns))]
-                query = sa.select(self._idx() + utils.label_cols(cols))
-                return DataFrame(self._index, self.columns, query)
-            row_count = len(self)
-            if len(other) != row_count:
-                err = "Unable to coerce to Series, length must be {}: given {}"
-                raise ValueError(err.format(row_count, len(other)))
-            raise NotImplementedError
+                        for i in range(num_cols)]
+                self._cte = sa.select(self._idx() + cols).cte()
+                return
+            num_rows = len(self)
+            if len(other) != num_rows:
+                raise ValueError(err.format(num_rows, len(other)))
+            other = Series.from_list(other)
+            other_rowid = other._idx_at(0)
+            cols, (other,), join_cond = self._paste_join(other, other_rowid)
+            cols = [app_op(c, other) for c in self._cols()]
+            joined = self._cte.join(other._cte, join_cond)
+            query = sa.select(self._idx() + cols)
+            self._cte = query.select_from(joined).cte()
+            return
         err = "Cannot broadcast np.ndarray with operand of type {}"
         raise TypeError(err.format(type(other)))
 
@@ -168,15 +145,15 @@ class DataFrame(generic.GenericMixin, ops_mixin.OpsMixin):
         index = []
         columns = []
         for row in self._fetch():
-            if len(self._index) == 1:
-                index.append(row[0])
-            else:
-                index.append(row[:len(self._index)])
             columns.append(row[len(self._index):])
-        if len(self._index) == 1:
-            index = pd.Index(index, name=self._index[0])
-        else:
+            if self._is_mindex:
+                index.append(row[:len(self._index)])
+            else:
+                index.append(row[0])
+        if self._is_mindex:
             index = pd.MultiIndex.from_tuples(index, names=self._index)
+        else:
+            index = pd.Index(index, name=self._index[0])
         df = pd.DataFrame.from_records(columns, columns=self._columns)
         return df.set_index(index)
 
@@ -190,7 +167,7 @@ class DataFrame(generic.GenericMixin, ops_mixin.OpsMixin):
                                for index, data in df.iterrows()])
         query.bind = db.metadata().bind
         index = pd.Index(df.index.names)
-        return DataFrame(index, df.columns, query)
+        return DataFrame(index, df.columns, query.cte())
 
     @staticmethod
     def from_table(table, schema=None, columns=None, index=None):
@@ -210,94 +187,75 @@ class DataFrame(generic.GenericMixin, ops_mixin.OpsMixin):
         cols = [c.name for c in tbl.columns]
         if index is None:
             sql = "ROW_NUMBER() OVER () - 1"
-            idx_col = sa.column(sql, type_=sa.INTEGER, is_literal=True)
-            idx = utils.label_idx([idx_col])
+            idx = [sa.literal_column(sql, sa.INTEGER).label("i_rowid")]
             index = pd.Index((None,))
         else:
-            if pd.api.types.is_list_like(index):
-                index = pd.Index(index)
-            else:
-                index = pd.Index((index,))
+            if not pd.api.types.is_list_like(index):
+                index = (index,)
+            index = pd.Index(index)
             for i in index:
                 cols.pop(cols.index(i))
-            idx = utils.label_idx([tbl.columns[i] for i in index])
+            idx = [tbl.columns[i].label("i_{}".format(i)) for i in index]
         if columns is None:
             columns = pd.Index(cols)
         else:
             columns = pd.Index(columns)
             for c in columns:
                 cols.index(c)
-        cols = utils.label_cols([tbl.columns[i] for i in columns])
+        cols = [tbl.columns[i].label("c_{}".format(i)) for i in columns]
         query = sa.select(idx + cols)
-        return DataFrame(index, columns, query)
+        return DataFrame(index, columns, query.cte())
 
 
-class Series(generic.GenericMixin):
+class Series(base.BaseFrame, generic.GenericMixin):
     ndim = 1
 
-    def __init__(self, index, columns, query):
-        if not isinstance(query, sa.sql.selectable.CTE):
-            query = query.cte()
-        self._index = index
-        self._columns = columns
-        self._query = query
+    def __init__(self, index, columns, cte, name):
+        super().__init__(index, columns, cte)
+        self.name = name
 
     def __iter__(self):
         for row in self._fetch():
             yield row[-1]
 
-    @property
-    def name(self):
-        return self._columns[0]
-
-    @property
-    def shape(self):
-        return len(self),
-
-    def iteritems(self):
-        for row in self._fetch():
-            if len(self._index) == 1:
-                yield row[0], row[1]
-            else:
-                yield row[:len(self._index)], row[-1]
-
-    def _get_iat(self, row):
-        row_count = len(self)
-        if row < 0:
-            row = row_count + row
-        if row < 0 or row >= row_count:
-            err = "index {} is out of bounds for axis 0 with size {}"
-            raise IndexError(err.format(row, row_count))
-        column = self._col_at(0)
-        return sa.select([column]).limit(1).offset(row).scalar()
-
     def to_pandas(self):
         index = []
         value = []
         for row in self._fetch():
-            if len(self._index) == 1:
-                index.append(row[0])
-            else:
-                index.append(row[:len(self._index)])
             value.append(row[-1])
-        if len(self._index == 1):
-            index = pd.Index(index, name=self._index[0])
-        else:
+            if self._is_mindex:
+                index.append(row[:-1])
+            else:
+                index.append(row[0])
+        if self._is_mindex:
             index = pd.MultiIndex.from_tuples(index, names=self._index)
-        return pd.Series(value, index=index)
+        else:
+            index = pd.Index(index, name=self._index[0])
+        return pd.Series(value, index=index, name=self.name)
 
     @staticmethod
-    def from_pandas(seq, optional=False):
+    def from_pandas(seq, name=None, optional=False):
         if not isinstance(seq, pd.Series):
             if optional:
                 return seq
             raise TypeError("Must be a Pandas Series")
+        if name is None:
+            name = seq.name
         query = sa.union_all(*[row_to_query(index, data)
                                for index, data in seq.iteritems()])
         query.bind = db.metadata().bind
         index = pd.Index(seq.index.names)
-        columns = pd.Index((seq.name,))
-        return Series(index, columns, query)
+        columns = pd.Index((name,))
+        return Series(index, columns, query.cte(), name)
+
+    @staticmethod
+    def from_list(values, name=None):
+        query = sa.union_all(*[sa.select([sa.literal(i), sa.literal(v)])
+                               for i, (v,) in enumerate(values)])
+        query.bind = db.metadata().bind
+        index = pd.Index([None])
+        columns = pd.Index([None])
+        return Series(index, columns, query.cte(), name)
 
 
 __all__ = ['DataFrame', 'Series']
