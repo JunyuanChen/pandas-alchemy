@@ -104,7 +104,12 @@ class DataFrame(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
                 self._cte = sa.select(self._idx() + cols).cte()
                 self._columns = columns
                 return
-            raise NotImplementedError
+            index, idx, join_cond = self._join_idx(other, level=level)
+            cols = [app_op(c, other._col_at(0)) for c in self._cols()]
+            joined = self._cte.join(other._cte, join_cond, full=True)
+            self._cte = sa.select(idx + cols).select_from(joined).cte()
+            self._index = index
+            return
         if isinstance(other, (DataFrame, pd.DataFrame)):
             raise NotImplementedError
         if pd.api.types.is_list_like(other):

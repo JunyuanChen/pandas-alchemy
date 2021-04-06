@@ -53,6 +53,13 @@ class BaseFrame:
         r_idxer = range(len(joined)) if r_idxer is None else r_idxer
         return joined, zip(l_idxer, r_idxer)
 
+    def _join_idx(self, other, level=None):
+        if not self._is_mindex and not other._is_mindex:
+            join_cond = self._idx_at(0) == other._idx_at(0)
+            idx = [sa.func.coalesce(self._idx_at(0), other._idx_at(0))]
+            return self._index, idx, join_cond
+        raise NotImplementedError
+
     @utils.copied
     def _paste_join(self, other, other_rowid=None):
         """ Join two BaseFrame on rowid. """
