@@ -65,16 +65,19 @@ class DataFrame(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
             else:
                 yield row[0], data
 
-    def _get_iat(self, row, col):
-        err = "index {} is out of bounds for axis 0 with size {}"
-        col = utils.wrap(col, len(self._columns))
-        if col < 0 or col >= len(self._columns):
-            raise IndexError(err.format(col, len(self._columns)))
-        row_count = len(self)
-        row = utils.wrap(row, row_count)
-        if row < 0 or row >= row_count:
-            raise IndexError(err.format(row, row_count))
-        return sa.select([self._col_at(col)]).limit(1).offset(row).scalar()
+    def _get_value(self, index, col, takeable=False):
+        if takeable:
+            err = "index {} is out of bounds for axis 0 with size {}"
+            col = utils.wrap(col, len(self._columns))
+            if col < 0 or col >= len(self._columns):
+                raise IndexError(err.format(col, len(self._columns)))
+            row_count = len(self)
+            index = utils.wrap(index, row_count)
+            if index < 0 or index >= row_count:
+                raise IndexError(err.format(index, row_count))
+            col = sa.select([self._col_at(col)])
+            return col.limit(1).offset(index).scalar()
+        raise NotImplementedError
 
     @utils.copied
     def _op(self, op, other, axis='columns', level=None,

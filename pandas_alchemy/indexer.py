@@ -11,7 +11,7 @@ class _iAtIndexer:
             if not isinstance(k, int):
                 err = "iAt based indexing can only have integer indexers"
                 raise ValueError(err)
-        return self.obj._get_iat(*key)
+        return self.obj._get_value(*key, takeable=True)
 
     @property
     def ndim(self):
