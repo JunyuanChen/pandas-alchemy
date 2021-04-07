@@ -1,5 +1,6 @@
 import math
 import copy
+import pandas as pd
 import sqlalchemy as sa
 
 
@@ -62,6 +63,24 @@ def postgresql_full_outer_join(lhs, rhs, cond, selects):
 @with_raw_connection
 def sqlite_floor_function(con):
     con.create_function("floor", 1, math.floor)
+
+
+@augment("sqlite")
+def sqlite_NA_adapters(engine):
+    register = engine.dialect.dbapi.register_adapter
+    register(pd.NA.__class__, lambda _: None)
+    register(pd.NaT.__class__, lambda _: None)
+
+
+@augment("postgresql")
+def postgresql_NA_adapters(engine):
+    ext = engine.dialect.dbapi.extensions
+
+    def adapter(value):
+        return ext.AsIs("NULL")
+
+    ext.register_adapter(pd.NA.__class__, adapter)
+    ext.register_adapter(pd.NaT.__class__, adapter)
 
 
 __all__ = ["AUGMENTATION", "POLYFILL", "CURRENT", "augment_engine",
