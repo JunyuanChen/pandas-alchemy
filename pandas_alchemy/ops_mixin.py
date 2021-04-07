@@ -47,5 +47,23 @@ class OpsMixin:
     def __rpow__(self, other):
         return self.rpow(other)
 
+    def __eq__(self, other):
+        return self.eq(other)
+
+    def __ne__(self, other):
+        return self.ne(other)
+
+    def __le__(self, other):
+        return self.le(other)
+
+    def __lt__(self, other):
+        return self.lt(other)
+
+    def __ge__(self, other):
+        return self.ge(other)
+
+    def __gt__(self, other):
+        return self.gt(other)
+
 
 __all__ = ["OpsMixin"]

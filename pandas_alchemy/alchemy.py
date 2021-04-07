@@ -41,6 +41,15 @@ def dataframe_op(op, name=None, before=None, after=None):
     return op_func, rop_func
 
 
+def dataframe_cmp(op, name=None, before=None, after=None):
+    def cmp_func(self, other, axis="columns", level=None):
+        df = self if before is None else before(self)
+        result = df._op(op, other, axis=axis, level=level)
+        return result if after is None else after(result)
+    cmp_func.__name__ = op.__name__ if name is None else name
+    return cmp_func
+
+
 class DataFrame(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
     ndim = 2
     _AXIS_MAPPER = utils.merge(base.BaseFrame._AXIS_MAPPER,
@@ -161,6 +170,13 @@ class DataFrame(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
                                        after=lambda df: df._app(sa.func.floor))
     mod, rmod = dataframe_op(operator.mod)
     pow, rpow = dataframe_op(operator.pow)
+
+    eq = dataframe_cmp(operator.eq)
+    ne = dataframe_cmp(operator.ne)
+    le = dataframe_cmp(operator.le)
+    lt = dataframe_cmp(operator.lt)
+    ge = dataframe_cmp(operator.ge)
+    gt = dataframe_cmp(operator.gt)
 
     def to_pandas(self):
         index = []
