@@ -113,7 +113,19 @@ class DataFrame(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
             self._index = index
             return
         if isinstance(other, (DataFrame, pd.DataFrame)):
-            raise NotImplementedError
+            if self._cte == other._cte:
+                # Ensure different names for self join
+                self._cte = self._cte.alias()
+            index, idx, join_cond = self._join_idx(other, level=level)
+            columns, idxers = self._join_cols(other._columns)
+            cols = [app_op(self._col_at(i), other._col_at(j))
+                    for i, j in idxers]
+            self._cte = dialect.CURRENT["full_outer_join"](
+                self._cte, other._cte, join_cond, idx + cols
+            ).cte()
+            self._index = index
+            self._columns = columns
+            return
         if pd.api.types.is_list_like(other):
             other = list(other)
             err = "Unable to coerce to Series, length must be {}: given {}"
