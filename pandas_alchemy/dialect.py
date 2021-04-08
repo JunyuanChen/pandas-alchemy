@@ -3,7 +3,6 @@ import copy
 import pandas as pd
 import sqlalchemy as sa
 
-
 AUGMENTATION = {}
 POLYFILL = {}
 CURRENT = None
@@ -23,6 +22,7 @@ def augment(db_name):
         else:
             AUGMENTATION[db_name].append(f)
         return f
+
     return decorator
 
 
@@ -35,7 +35,9 @@ def refill(name):
     def decorator(f):
         def refiller(engine):
             CURRENT[name] = f
+
         return refiller
+
     return decorator
 
 
@@ -43,6 +45,7 @@ def with_raw_connection(f):
     def raw_connection(engine):
         con = engine.raw_connection().connection
         return f(con)
+
     return raw_connection
 
 
@@ -83,5 +86,7 @@ def postgresql_NA_adapters(engine):
     ext.register_adapter(pd.NaT.__class__, adapter)
 
 
-__all__ = ["AUGMENTATION", "POLYFILL", "CURRENT", "augment_engine",
-           "augment", "polyfill", "refill", "with_raw_connection"]
+__all__ = [
+    "AUGMENTATION", "POLYFILL", "CURRENT", "augment_engine", "augment",
+    "polyfill", "refill", "with_raw_connection"
+]

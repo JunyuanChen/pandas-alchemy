@@ -12,6 +12,7 @@ def copied(f):
         this = copy.copy(self)
         result = f(this, *args, **kwargs)
         return this if result is None else result
+
     return self_copied
 
 

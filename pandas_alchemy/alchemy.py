@@ -25,14 +25,21 @@ def row_to_query(index, data):
 def dataframe_op(op, name=None, before=None, after=None):
     def op_func(self, other, axis="columns", level=None, fill_value=None):
         df = self if before is None else before(self)
-        result = df._op(op, other, axis=axis, level=level,
+        result = df._op(op,
+                        other,
+                        axis=axis,
+                        level=level,
                         fill_value=fill_value)
         return result if after is None else after(result)
 
     def rop_func(self, other, axis="columns", level=None, fill_value=None):
         df = self if before is None else before(self)
-        result = df._op(op, other, axis=axis, level=level,
-                        fill_value=fill_value, reverse=True)
+        result = df._op(op,
+                        other,
+                        axis=axis,
+                        level=level,
+                        fill_value=fill_value,
+                        reverse=True)
         return result if after is None else after(result)
 
     if name is None:
@@ -47,6 +54,7 @@ def dataframe_cmp(op, name=None, before=None, after=None):
         df = self if before is None else before(self)
         result = df._op(op, other, axis=axis, level=level)
         return result if after is None else after(result)
+
     cmp_func.__name__ = op.__name__ if name is None else name
     return cmp_func
 
@@ -54,16 +62,21 @@ def dataframe_cmp(op, name=None, before=None, after=None):
 def series_op(op, name=None, before=None, after=None):
     def op_func(self, other, level=None, fill_value=None, axis=0):
         seq = self if before is None else before(self)
-        result = seq._op(op, other, level=level,
+        result = seq._op(op,
+                         other,
+                         level=level,
                          fill_value=fill_value,
                          axis=axis)
         return result if after is None else after(result)
 
     def rop_func(self, other, level=None, fill_value=None, axis=0):
         seq = self if before is None else before(self)
-        result = seq._op(op, other, level=level,
+        result = seq._op(op,
+                         other,
+                         level=level,
                          fill_value=fill_value,
-                         axis=axis, reverse=True)
+                         axis=axis,
+                         reverse=True)
         return result if after is None else after(result)
 
     if name is None:
@@ -85,8 +98,10 @@ def series_cmp(op, name=None, before=None, after=None):
 
 class DataFrame(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
     ndim = 2
-    _AXIS_MAPPER = utils.merge(base.BaseFrame._AXIS_MAPPER,
-                               {1: 1, "columns": 1})
+    _AXIS_MAPPER = utils.merge(base.BaseFrame._AXIS_MAPPER, {
+        1: 1,
+        "columns": 1
+    })
 
     def __getattr__(self, name):
         try:
@@ -148,8 +163,13 @@ class DataFrame(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
         raise NotImplementedError
 
     @utils.copied
-    def _op(self, op, other, axis="columns", level=None,
-            fill_value=None, reverse=False):
+    def _op(self,
+            op,
+            other,
+            axis="columns",
+            level=None,
+            fill_value=None,
+            reverse=False):
         axis = 1 if axis is None else self._get_axis(axis)
 
         def app_op(lhs, rhs):
@@ -174,9 +194,10 @@ class DataFrame(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
                 return
             index, idx, join_cond = self._join_idx(other, level=level)
             cols = [app_op(c, other._the_col) for c in self._cols()]
-            self._cte = dialect.CURRENT["full_outer_join"](
-                self._cte, other._cte, join_cond, idx + cols
-            ).cte()
+            self._cte = dialect.CURRENT["full_outer_join"](self._cte,
+                                                           other._cte,
+                                                           join_cond,
+                                                           idx + cols).cte()
             self._index = index
             return
         if isinstance(other, (DataFrame, pd.DataFrame)):
@@ -186,11 +207,13 @@ class DataFrame(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
                 self._cte = self._cte.alias()
             index, idx, join_cond = self._join_idx(other, level=level)
             columns, idxers = self._join_cols(other._columns)
-            cols = [app_op(self._col_at(i), other._col_at(j))
-                    for i, j in idxers]
-            self._cte = dialect.CURRENT["full_outer_join"](
-                self._cte, other._cte, join_cond, idx + cols
-            ).cte()
+            cols = [
+                app_op(self._col_at(i), other._col_at(j)) for i, j in idxers
+            ]
+            self._cte = dialect.CURRENT["full_outer_join"](self._cte,
+                                                           other._cte,
+                                                           join_cond,
+                                                           idx + cols).cte()
             self._index = index
             self._columns = columns
             return
@@ -201,8 +224,9 @@ class DataFrame(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
                 if len(other) != num_cols:
                     raise ValueError(f"Unable to coerce to Series, length "
                                      f"must be {num_cols}: given {len(other)}")
-                cols = [app_op(self._col_at(i), other[i])
-                        for i in range(num_cols)]
+                cols = [
+                    app_op(self._col_at(i), other[i]) for i in range(num_cols)
+                ]
                 self._cte = sa.select(self._idx() + cols).cte()
                 return
             num_rows = len(self)
@@ -222,11 +246,13 @@ class DataFrame(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
     add, radd = dataframe_op(operator.add)
     sub, rsub = dataframe_op(operator.sub)
     mul, rmul = dataframe_op(operator.mul)
-    div, rdiv = dataframe_op(operator.truediv, name="div",
+    div, rdiv = dataframe_op(operator.truediv,
+                             name="div",
                              before=lambda df: df._cast(sa.NUMERIC))
     truediv, rtruediv = dataframe_op(operator.truediv,
                                      before=lambda df: df._cast(sa.NUMERIC))
-    floordiv, rfloordiv = dataframe_op(operator.truediv, name="floordiv",
+    floordiv, rfloordiv = dataframe_op(operator.truediv,
+                                       name="floordiv",
                                        after=lambda df: df._app(sa.func.floor))
     mod, rmod = dataframe_op(operator.mod)
     pow, rpow = dataframe_op(operator.pow)
@@ -258,8 +284,8 @@ class DataFrame(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
             if optional:
                 return df
             raise TypeError("Must be a Pandas DataFrame")
-        query = sa.union_all(*[row_to_query(index, data)
-                               for index, data in df.iterrows()])
+        query = sa.union_all(
+            *[row_to_query(index, data) for index, data in df.iterrows()])
         query.bind = db.metadata().bind
         index = pd.Index(df.index.names)
         return DataFrame(index, df.columns, query.cte())
@@ -277,15 +303,18 @@ class DataFrame(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
         Otherwise, if index is not None, it is taken as the name
         of the column to become the DataFrame's index.
         """
-        tbl = sa.Table(table, db.metadata(), schema=schema,
-                       extend_existing=True, autoload=True)
+        tbl = sa.Table(table,
+                       db.metadata(),
+                       schema=schema,
+                       extend_existing=True,
+                       autoload=True)
         cols = [c.name for c in tbl.columns]
         if index is None:
             idx = [sa.func.row_number().over() - 1]
-            index = pd.Index((None,))
+            index = pd.Index((None, ))
         else:
             if not pd.api.types.is_list_like(index):
-                index = (index,)
+                index = (index, )
             index = pd.Index(index)
             for i in index:
                 cols.pop(cols.index(i))
@@ -334,8 +363,13 @@ class Series(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
         raise NotImplementedError
 
     @utils.copied
-    def _op(self, op, other, level=None, fill_value=None,
-            axis=0, reverse=False):
+    def _op(self,
+            op,
+            other,
+            level=None,
+            fill_value=None,
+            axis=0,
+            reverse=False):
         if axis is not None:
             # Since there is only one possible axis for Series,
             # we don't need to do anything besides validation.
@@ -358,14 +392,17 @@ class Series(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
                 self._cte = self._cte.alias()
             index, idx, join_cond = self._join_idx(other, level=level)
             col = app_op(self._the_col, other._the_col)
-            self._cte = dialect.CURRENT["full_outer_join"](
-                self._cte, other._cte, join_cond, idx + [col]
-            ).cte()
+            self._cte = dialect.CURRENT["full_outer_join"](self._cte,
+                                                           other._cte,
+                                                           join_cond,
+                                                           idx + [col]).cte()
             self._index = index
             return
         if isinstance(other, (DataFrame, pd.DataFrame)):
             other = DataFrame.from_pandas(other, optional=True)
-            return other.radd(self, axis=axis, level=level,
+            return other.radd(self,
+                              axis=axis,
+                              level=level,
                               fill_value=fill_value)
         if pd.api.types.is_list_like(other):
             other = list(other)
@@ -393,11 +430,13 @@ class Series(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
     add, radd = series_op(operator.add)
     sub, rsub = series_op(operator.sub)
     mul, rmul = series_op(operator.mul)
-    div, rdiv = series_op(operator.truediv, name="div",
+    div, rdiv = series_op(operator.truediv,
+                          name="div",
                           before=lambda seq: seq._cast(sa.NUMERIC))
     truediv, rtruediv = series_op(operator.truediv,
                                   before=lambda seq: seq._cast(sa.NUMERIC))
-    floordiv, rfloordiv = series_op(operator.truediv, name="floordiv",
+    floordiv, rfloordiv = series_op(operator.truediv,
+                                    name="floordiv",
                                     after=lambda seq: seq._app(sa.func.floor))
     mod, rmod = series_op(operator.mod)
     pow, rpow = series_op(operator.pow)
@@ -430,17 +469,19 @@ class Series(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
             raise TypeError("Must be a Pandas Series")
         if name is None:
             name = seq.name
-        query = sa.union_all(*[row_to_query(index, data)
-                               for index, data in seq.iteritems()])
+        query = sa.union_all(
+            *[row_to_query(index, data) for index, data in seq.iteritems()])
         query.bind = db.metadata().bind
         index = pd.Index(seq.index.names)
-        columns = pd.Index((name,))
+        columns = pd.Index((name, ))
         return Series(index, columns, query.cte(), name)
 
     @staticmethod
     def from_list(values, name=None):
-        query = sa.union_all(*[sa.select([sa.literal(i), sa.literal(v)])
-                               for i, v in enumerate(values)])
+        query = sa.union_all(*[
+            sa.select([sa.literal(i), sa.literal(v)])
+            for i, v in enumerate(values)
+        ])
         query.bind = db.metadata().bind
         index = pd.Index([None])
         columns = pd.Index([None])

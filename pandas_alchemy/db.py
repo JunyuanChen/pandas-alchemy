@@ -1,6 +1,5 @@
 import sqlalchemy as sa
 
-
 METADATA = None
 
 

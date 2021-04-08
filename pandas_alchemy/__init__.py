@@ -13,6 +13,7 @@ def use_repr_workaround():
     """
     def to_pandas_repr(self):
         return repr(self.to_pandas())
+
     DataFrame.__repr__ = to_pandas_repr
     Series.__repr__ = to_pandas_repr
 

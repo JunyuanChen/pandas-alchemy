@@ -47,7 +47,8 @@ class BaseFrame:
         self._cte = sa.select(cte_columns).cte()
 
     def _join_cols(self, other_index, how="outer"):
-        joined, l_idxer, r_idxer = self._columns.join(other_index, how=how,
+        joined, l_idxer, r_idxer = self._columns.join(other_index,
+                                                      how=how,
                                                       return_indexers=True)
         l_idxer = range(len(joined)) if l_idxer is None else l_idxer
         r_idxer = range(len(joined)) if r_idxer is None else r_idxer

@@ -6,7 +6,7 @@ class _iAtIndexer:
 
     def __getitem__(self, key):
         if not isinstance(key, tuple):
-            key = (key,)
+            key = (key, )
         for k in key:
             if not isinstance(k, int):
                 err = "iAt based indexing can only have integer indexers"
