@@ -1,4 +1,5 @@
 import operator
+import collections
 import pandas as pd
 import sqlalchemy as sa
 from . import db
@@ -116,6 +117,21 @@ class DataFrame(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
     def iteritems(self):
         for i, col in enumerate(self._columns):
             yield col, self._seq_at(i, name=col)
+
+    def itertuples(self, index=True, name='Pandas'):
+        fields = list(self._columns)
+        if index:
+            fields.insert(0, "Index")
+        named_tuple = collections.namedtuple(name, fields, rename=True)
+        for row in self._fetch():
+            if index:
+                if self._is_mindex:
+                    idx = row[:len(self._index)]
+                else:
+                    idx = row[0]
+                yield named_tuple(idx, *row[len(self._index):])
+            else:
+                yield named_tuple(*row[len(self._index):])
 
     def _get_value(self, index, col, takeable=False):
         if takeable:
