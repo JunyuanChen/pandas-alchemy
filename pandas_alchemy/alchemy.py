@@ -90,10 +90,16 @@ class DataFrame(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
     def __getattr__(self, name):
         try:
             col = self.__dict__["_columns"].get_loc(name)
-            query = sa.select(self._idx() + [self._col_at(col)])
-            return Series(self._index, pd.Index([name]), query.cte(), name)
+            return self._seq_at(col)
         except KeyError:
             return self.__getattribute__(name)
+
+    def _seq_at(self, i, name=None):
+        """ Return the Series corresponding to column i. """
+        if name is None:
+            name = self._columns[i]
+        query = sa.select(self._idx() + [self._col_at(i)])
+        return Series(self._index, pd.Index([name]), query.cte(), name)
 
     @property
     def columns(self):
@@ -106,6 +112,10 @@ class DataFrame(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
                 yield row[:len(self._index)], data
             else:
                 yield row[0], data
+
+    def iteritems(self):
+        for i, col in enumerate(self._columns):
+            yield col, self._seq_at(i, name=col)
 
     def _get_value(self, index, col, takeable=False):
         if takeable:
@@ -291,6 +301,14 @@ class Series(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
     def _the_col(self):
         """ Return THE column of the Series. """
         return self._col_at(0)
+
+    def iteritems(self):
+        for row in self._fetch():
+            data = row[-1]
+            if self._is_mindex:
+                yield row[:-1], data
+            else:
+                yield row[0], data
 
     def _get_value(self, label, takeable=False):
         if takeable:
