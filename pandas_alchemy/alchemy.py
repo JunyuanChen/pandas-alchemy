@@ -115,13 +115,14 @@ class DataFrame(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
                 self._columns = columns
                 return
             index, idx, join_cond = self._join_idx(other, level=level)
-            cols = [app_op(c, other._col_at(0)) for c in self._cols()]
+            cols = [app_op(c, other._the_col) for c in self._cols()]
             self._cte = dialect.CURRENT["full_outer_join"](
                 self._cte, other._cte, join_cond, idx + cols
             ).cte()
             self._index = index
             return
         if isinstance(other, (DataFrame, pd.DataFrame)):
+            other = DataFrame.from_pandas(other)
             if self._cte == other._cte:
                 # Ensure different names for self join
                 self._cte = self._cte.alias()
@@ -152,7 +153,7 @@ class DataFrame(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
             other = Series.from_list(other)
             other_rowid = other._idx_at(0)
             this, other, joined = self._paste_join(other, other_rowid)
-            cols = [app_op(c, other._col_at(0)) for c in this._cols()]
+            cols = [app_op(c, other._the_col) for c in this._cols()]
             query = sa.select(this._idx() + cols).select_from(joined)
             self._cte = query.cte()
             return
@@ -254,6 +255,11 @@ class Series(base.BaseFrame, generic.GenericMixin):
         for row in self._fetch():
             yield row[-1]
 
+    @property
+    def _the_col(self):
+        """ Return THE column of the Series. """
+        return self._col_at(0)
+
     def _get_value(self, label, takeable=False):
         if takeable:
             row_count = len(self)
@@ -261,9 +267,65 @@ class Series(base.BaseFrame, generic.GenericMixin):
             if label < 0 or label > row_count:
                 err = "index {} is out of bounds for axis 0 with size {}"
                 raise IndexError(err.format(label, row_count))
-            col = sa.select([self._col_at(0)])
+            col = sa.select([self._the_col])
             return col.limit(1).offset(label).scalar()
         raise NotImplementedError
+
+    @utils.copied
+    def _op(self, op, other, level=None, fill_value=None,
+            axis=0, reverse=False):
+        if axis is not None:
+            # Since there is only one possible axis for Series,
+            # we don't need to do anything besides validation.
+            self._get_axis(axis)
+
+        def app_op(lhs, rhs):
+            result = op(rhs, lhs) if reverse else op(lhs, rhs)
+            if fill_value is None:
+                return result
+            return sa.func.coalesce(result, fill_value)
+
+        if pd.api.types.is_scalar(other):
+            col = app_op(self._the_col, other)
+            self._cte = sa.select(self._idx() + [col]).cte()
+            return
+        if isinstance(other, (Series, pd.Series)):
+            other = Series.from_pandas(other, optional=True)
+            if self._cte == other._cte:
+                # Ensure different names for self join
+                self._cte = self._cte.alias()
+            index, idx, join_cond = self._join_idx(other, level=level)
+            col = app_op(self._the_col, other)
+            self._cte = dialect.CURRENT["full_outer_join"](
+                self._cte, other._cte, join_cond, idx + [col]
+            ).cte()
+            self._index = index
+            return
+        if isinstance(other, (DataFrame, pd.DataFrame)):
+            other = DataFrame.from_pandas(other, optional=True)
+            return other.radd(self, axis=axis, level=level,
+                              fill_value=fill_value)
+        if pd.api.types.is_list_like(other):
+            other = list(other)
+            if len(other) == 1:
+                col = app_op(self._the_col, other[0])
+                self._cte = sa.select(self._idx + [col]).cte()
+                return
+            row_count = len(self)
+            if len(other) != row_count:
+                err = ("operands could not be broadcast "
+                       "together with shapes ({},) ({},)")
+                if reverse:
+                    raise ValueError(err.format(len(other), row_count))
+                raise ValueError(err.format(row_count, len(other)))
+            other = Series.from_list(other)
+            other_rowid = other._idx_at(0)
+            this, other, joined = self._paste_join(other, other_rowid)
+            col = app_op(this._the_col, other._the_col)
+            query = sa.select(this._idx() + [col]).select_from(joined)
+            self._cte = query.cte()
+        err = "Cannot broadcast np.ndarray with operand of type {}"
+        raise TypeError(err.format(type(other)))
 
     def to_pandas(self):
         index = []
