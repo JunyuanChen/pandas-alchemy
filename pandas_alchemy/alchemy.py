@@ -50,6 +50,38 @@ def dataframe_cmp(op, name=None, before=None, after=None):
     return cmp_func
 
 
+def series_op(op, name=None, before=None, after=None):
+    def op_func(self, other, level=None, fill_value=None, axis=0):
+        seq = self if before is None else before(self)
+        result = seq._op(op, other, level=level,
+                         fill_value=fill_value,
+                         axis=axis)
+        return result if after is None else after(result)
+
+    def rop_func(self, other, level=None, fill_value=None, axis=0):
+        seq = self if before is None else before(self)
+        result = seq._op(op, other, level=level,
+                         fill_value=fill_value,
+                         axis=axis, reverse=True)
+        return result if after is None else after(result)
+
+    if name is None:
+        name = op.__name__
+    op_func.__name__ = name
+    rop_func.__name__ = "r" + name
+    return op_func, rop_func
+
+
+def series_cmp(op, name=None, before=None, after=None):
+    def cmp_func(self, other, level=None, axis=0):
+        seq = self if before is None else before(self)
+        result = seq._op(op, other, level=level, axis=axis)
+        return result if after is None else after(result)
+
+    cmp_func.__name__ = op.__name__ if name is None else name
+    return cmp_func
+
+
 class DataFrame(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
     ndim = 2
     _AXIS_MAPPER = utils.merge(base.BaseFrame._AXIS_MAPPER,
@@ -244,7 +276,7 @@ class DataFrame(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
         return DataFrame(index, columns, query.cte())
 
 
-class Series(base.BaseFrame, generic.GenericMixin):
+class Series(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
     ndim = 1
 
     def __init__(self, index, columns, cte, name):
@@ -295,7 +327,7 @@ class Series(base.BaseFrame, generic.GenericMixin):
                 # Ensure different names for self join
                 self._cte = self._cte.alias()
             index, idx, join_cond = self._join_idx(other, level=level)
-            col = app_op(self._the_col, other)
+            col = app_op(self._the_col, other._the_col)
             self._cte = dialect.CURRENT["full_outer_join"](
                 self._cte, other._cte, join_cond, idx + [col]
             ).cte()
@@ -326,6 +358,25 @@ class Series(base.BaseFrame, generic.GenericMixin):
             self._cte = query.cte()
         err = "Cannot broadcast np.ndarray with operand of type {}"
         raise TypeError(err.format(type(other)))
+
+    add, radd = series_op(operator.add)
+    sub, rsub = series_op(operator.sub)
+    mul, rmul = series_op(operator.mul)
+    div, rdiv = series_op(operator.truediv, name="div",
+                          before=lambda seq: seq._cast(sa.NUMERIC))
+    truediv, rtruediv = series_op(operator.truediv,
+                                  before=lambda seq: seq._cast(sa.NUMERIC))
+    floordiv, rfloordiv = series_op(operator.truediv, name="floordiv",
+                                    after=lambda seq: seq._app(sa.func.floor))
+    mod, rmod = series_op(operator.mod)
+    pow, rpow = series_op(operator.pow)
+
+    eq = series_cmp(operator.eq)
+    ne = series_cmp(operator.ne)
+    le = series_cmp(operator.le)
+    lt = series_cmp(operator.lt)
+    ge = series_cmp(operator.ge)
+    gt = series_cmp(operator.gt)
 
     def to_pandas(self):
         index = []
