@@ -108,11 +108,9 @@ class DataFrame(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
 
     def iterrows(self):
         for row in self._fetch():
+            idx = row[:len(self._index)] if self._is_mindex else row[0]
             data = pd.Series(row[len(self._index):], index=self._columns)
-            if self._is_mindex:
-                yield row[:len(self._index)], data
-            else:
-                yield row[0], data
+            yield idx, data
 
     def iteritems(self):
         for i, col in enumerate(self._columns):
@@ -125,10 +123,7 @@ class DataFrame(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
         named_tuple = collections.namedtuple(name, fields, rename=True)
         for row in self._fetch():
             if index:
-                if self._is_mindex:
-                    idx = row[:len(self._index)]
-                else:
-                    idx = row[0]
+                idx = row[:len(self._index)] if self._is_mindex else row[0]
                 yield named_tuple(idx, *row[len(self._index):])
             else:
                 yield named_tuple(*row[len(self._index):])
@@ -242,10 +237,8 @@ class DataFrame(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
         columns = []
         for row in self._fetch():
             columns.append(row[len(self._index):])
-            if self._is_mindex:
-                index.append(row[:len(self._index)])
-            else:
-                index.append(row[0])
+            idx = row[:len(self._index)] if self._is_mindex else row[0]
+            index.append(idx)
         if self._is_mindex:
             index = pd.MultiIndex.from_tuples(index, names=self._index)
         else:
@@ -320,11 +313,8 @@ class Series(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
 
     def iteritems(self):
         for row in self._fetch():
-            data = row[-1]
-            if self._is_mindex:
-                yield row[:-1], data
-            else:
-                yield row[0], data
+            idx = row[:-1] if self._is_mindex else row[0]
+            yield idx, row[-1]
 
     def _get_value(self, label, takeable=False):
         if takeable:
@@ -416,11 +406,9 @@ class Series(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
         index = []
         value = []
         for row in self._fetch():
+            idx = row[:-1] if self._is_mindex else row[0]
+            index.append(idx)
             value.append(row[-1])
-            if self._is_mindex:
-                index.append(row[:-1])
-            else:
-                index.append(row[0])
         if self._is_mindex:
             index = pd.MultiIndex.from_tuples(index, names=self._index)
         else:
