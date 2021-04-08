@@ -33,8 +33,8 @@ class BaseFrame:
     def _get_axis(self, axis):
         axis_num = self._AXIS_MAPPER.get(axis)
         if axis_num is None:
-            err = "No axis named {} for object type {}"
-            raise ValueError(err.format(axis, self.__class__.__name__))
+            raise ValueError(f"No axis named {axis} for object "
+                             f"type {self.__class__.__name__}")
         return axis_num
 
     def _fetch(self):

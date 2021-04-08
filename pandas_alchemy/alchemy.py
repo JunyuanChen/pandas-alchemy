@@ -130,14 +130,19 @@ class DataFrame(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
 
     def _get_value(self, index, col, takeable=False):
         if takeable:
-            err = "index {} is out of bounds for axis 0 with size {}"
             col = utils.wrap(col, len(self._columns))
             if col < 0 or col >= len(self._columns):
-                raise IndexError(err.format(col, len(self._columns)))
+                # TODO Monitor changes in Pandas and adjust "axis 0"
+                #
+                # While technically it should be axis 1, Pandas 1.2.3
+                # says axis 0 in the corresponding exception.
+                raise IndexError(f"index {col} is out of bounds for "
+                                 f"axis 0 with size {len(self._columns)}")
             row_count = len(self)
             index = utils.wrap(index, row_count)
             if index < 0 or index >= row_count:
-                raise IndexError(err.format(index, row_count))
+                raise IndexError(f"index {index} is out of bounds for "
+                                 f"axis 0 with size {row_count}")
             col = sa.select([self._col_at(col)])
             return col.limit(1).offset(index).scalar()
         raise NotImplementedError
@@ -191,18 +196,19 @@ class DataFrame(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
             return
         if pd.api.types.is_list_like(other):
             other = list(other)
-            err = "Unable to coerce to Series, length must be {}: given {}"
             if axis == 1:
                 num_cols = len(self._columns)
                 if len(other) != num_cols:
-                    raise ValueError(err.format(num_cols, len(other)))
+                    raise ValueError(f"Unable to coerce to Series, length "
+                                     f"must be {num_cols}: given {len(other)}")
                 cols = [app_op(self._col_at(i), other[i])
                         for i in range(num_cols)]
                 self._cte = sa.select(self._idx() + cols).cte()
                 return
             num_rows = len(self)
             if len(other) != num_rows:
-                raise ValueError(err.format(num_rows, len(other)))
+                raise ValueError(f"Unable to coerce to Series, length "
+                                 f"must be {num_rows}: given {len(other)}")
             other = Series.from_list(other)
             other_rowid = other._idx_at(0)
             this, other, joined = self._paste_join(other, other_rowid)
@@ -210,8 +216,8 @@ class DataFrame(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
             query = sa.select(this._idx() + cols).select_from(joined)
             self._cte = query.cte()
             return
-        err = "Cannot broadcast np.ndarray with operand of type {}"
-        raise TypeError(err.format(type(other)))
+        raise TypeError(f"Cannot broadcast np.ndarray with "
+                        f"operand of type {type(other)}")
 
     add, radd = dataframe_op(operator.add)
     sub, rsub = dataframe_op(operator.sub)
@@ -321,8 +327,8 @@ class Series(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
             row_count = len(self)
             label = utils.wrap(label, row_count)
             if label < 0 or label > row_count:
-                err = "index {} is out of bounds for axis 0 with size {}"
-                raise IndexError(err.format(label, row_count))
+                raise IndexError(f"index {label} is out of bounds "
+                                 f"for axis 0 with size {row_count}")
             col = sa.select([self._the_col])
             return col.limit(1).offset(label).scalar()
         raise NotImplementedError
@@ -369,19 +375,20 @@ class Series(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
                 return
             row_count = len(self)
             if len(other) != row_count:
-                err = ("operands could not be broadcast "
-                       "together with shapes ({},) ({},)")
                 if reverse:
-                    raise ValueError(err.format(len(other), row_count))
-                raise ValueError(err.format(row_count, len(other)))
+                    lhs, rhs = len(other), row_count
+                else:
+                    lhs, rhs = row_count, len(other)
+                raise ValueError(f"operands could not be broadcast together "
+                                 f"with shapes ({lhs},) ({rhs},)")
             other = Series.from_list(other)
             other_rowid = other._idx_at(0)
             this, other, joined = self._paste_join(other, other_rowid)
             col = app_op(this._the_col, other._the_col)
             query = sa.select(this._idx() + [col]).select_from(joined)
             self._cte = query.cte()
-        err = "Cannot broadcast np.ndarray with operand of type {}"
-        raise TypeError(err.format(type(other)))
+        raise TypeError(f"Cannot broadcast np.ndarray with "
+                        f"operand of type {type(other)}")
 
     add, radd = series_op(operator.add)
     sub, rsub = series_op(operator.sub)

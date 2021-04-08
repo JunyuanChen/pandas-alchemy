@@ -34,13 +34,13 @@ class GenericMixin:
 
     def bool(self):
         if self.size != 1:
-            err = ("The truth value of a {} is ambiguous. "
-                   "Use a.empty, a.bool(), a.item(), a.any() or a.all().")
-            raise ValueError(err.format(self.__class__.__name__))
+            raise ValueError(f"The truth value of a {self.__class.__name__} "
+                             f"is ambiguous. Use a.empty, a.bool(), "
+                             f"a.item(), a.any() or a.all().")
         result = sa.select(self._cte).scalar()
         if not pd.api.types.is_bool(result):
-            err = "bool cannot act on a non-boolean single element {}"
-            raise ValueError(err.format(self.__class__.__name__))
+            raise ValueError(f"bool cannot act on a non-boolean "
+                             f"single element {self.__class__.__name__}")
         return result
 
     @utils.copied
