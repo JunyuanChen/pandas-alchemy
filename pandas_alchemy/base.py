@@ -1,5 +1,6 @@
 import sqlalchemy as sa
 from . import utils
+from . import dialect
 
 
 class BaseFrame:
@@ -54,11 +55,50 @@ class BaseFrame:
         r_idxer = range(len(joined)) if r_idxer is None else r_idxer
         return joined, zip(l_idxer, r_idxer)
 
-    def _join_idx(self, other, level=None):
+    @utils.copied
+    def _join_idx(self, other, select_cols, level=None):
         if not self._is_mindex and not other._is_mindex:
             join_cond = self._idx_at(0) == other._idx_at(0)
             idx = [sa.func.coalesce(self._idx_at(0), other._idx_at(0))]
-            return self._index, idx, join_cond
+            query = dialect.CURRENT["full_outer_join"](self, other, join_cond,
+                                                       idx + select_cols)
+            self._cte = query.cte()
+            return
+        if level is not None:
+            self._join_idx_level(other, level, select_cols, inplace=True)
+        else:
+            self._join_idx_names(other, select_cols, inplace=True)
+
+    @utils.copied
+    def _join_idx_level(self, other, level, select_cols):
+        if not self._is_mindex:
+            idx = other._idx()
+            join_cond = self._idx_at(0) == other._idx_at(level)
+            joined = other._cte.join(self._cte, join_cond, isouter=True)
+            self._cte = sa.select(idx + select_cols).select_from(joined).cte()
+            self._index = other._index
+            return
+        if not other._is_mindex:
+            idx = self._idx()
+            join_cond = other._idx_at(0) == self._idx_at(level)
+            joined = self._cte.join(other._cte, join_cond, isouter=True)
+            self._cte = sa.select(idx + select_cols).select_from(joined).cte()
+            return
+        raise TypeError("Join on level between two "
+                        "MultiIndex objects is ambiguous")
+
+    @utils.copied
+    def _join_idx_names(self, other, select_cols):
+        if self._index.intersection(other._index).empty:
+            raise ValueError("cannot join with no overlapping index names")
+        if not self._is_mindex:
+            level = other._index.get_loc(self._index[0])
+            self._join_idx_level(other, level, select_cols, inplace=True)
+            return
+        if not other._is_mindex:
+            level = self._index.get_loc(other._index[0])
+            self._join_idx_level(other, level, select_cols, inplace=True)
+            return
         raise NotImplementedError
 
     @utils.copied

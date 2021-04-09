@@ -4,7 +4,6 @@ import pandas as pd
 import sqlalchemy as sa
 from . import db
 from . import utils
-from . import dialect
 from . import base
 from . import generic
 from . import ops_mixin
@@ -192,29 +191,19 @@ class DataFrame(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
                 self._cte = sa.select(self._idx() + cols).cte()
                 self._columns = columns
                 return
-            index, idx, join_cond = self._join_idx(other, level=level)
             cols = [app_op(c, other._the_col) for c in self._cols()]
-            self._cte = dialect.CURRENT["full_outer_join"](self._cte,
-                                                           other._cte,
-                                                           join_cond,
-                                                           idx + cols).cte()
-            self._index = index
+            self._join_idx(other, cols, level=level, inplace=True)
             return
         if isinstance(other, (DataFrame, pd.DataFrame)):
             other = DataFrame.from_pandas(other)
             if self._cte == other._cte:
                 # Ensure different names for self join
                 self._cte = self._cte.alias()
-            index, idx, join_cond = self._join_idx(other, level=level)
             columns, idxers = self._join_cols(other._columns)
             cols = [
                 app_op(self._col_at(i), other._col_at(j)) for i, j in idxers
             ]
-            self._cte = dialect.CURRENT["full_outer_join"](self._cte,
-                                                           other._cte,
-                                                           join_cond,
-                                                           idx + cols).cte()
-            self._index = index
+            self._join_idx(other, cols, level=level, inplace=True)
             self._columns = columns
             return
         if pd.api.types.is_list_like(other):
@@ -390,13 +379,8 @@ class Series(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
             if self._cte == other._cte:
                 # Ensure different names for self join
                 self._cte = self._cte.alias()
-            index, idx, join_cond = self._join_idx(other, level=level)
             col = app_op(self._the_col, other._the_col)
-            self._cte = dialect.CURRENT["full_outer_join"](self._cte,
-                                                           other._cte,
-                                                           join_cond,
-                                                           idx + [col]).cte()
-            self._index = index
+            self._join_idx(other, [col], level=level, inplace=True)
             return
         if isinstance(other, (DataFrame, pd.DataFrame)):
             other = DataFrame.from_pandas(other, optional=True)
