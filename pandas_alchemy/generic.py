@@ -66,5 +66,16 @@ class GenericMixin:
         cols = [func(c) for c in self._cols()]
         self._cte = sa.select(self._idx() + cols).cte()
 
+    def isna(self):
+        cols = [c.is_(None) for c in self._cols()]
+        self._cte = sa.select(self._idx() + cols).cte()
+
+    def notna(self):
+        cols = [c.is_not(None) for c in self._cols()]
+        self._cte = sa.select(self._idx() + cols).cte()
+
+    isnull = isna
+    notnull = notna
+
 
 __all__ = ["GenericMixin"]
