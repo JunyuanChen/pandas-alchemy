@@ -4,6 +4,7 @@ import pandas as pd
 import sqlalchemy as sa
 from . import db
 from . import utils
+from . import coercion
 from . import base
 from . import generic
 from . import ops_mixin
@@ -172,7 +173,9 @@ class DataFrame(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
         axis = 1 if axis is None else self._get_axis(axis)
 
         def app_op(lhs, rhs):
-            result = op(rhs, lhs) if reverse else op(lhs, rhs)
+            if reverse:
+                lhs, rhs = rhs, lhs
+            result = coercion.app_op_coerced(op, lhs, rhs)
             if fill_value is None:
                 return result
             return sa.func.coalesce(result, fill_value)
@@ -365,7 +368,9 @@ class Series(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
             self._get_axis(axis)
 
         def app_op(lhs, rhs):
-            result = op(rhs, lhs) if reverse else op(lhs, rhs)
+            if reverse:
+                lhs, rhs = rhs, lhs
+            result = coercion.app_op_coerced(op, lhs, rhs)
             if fill_value is None:
                 return result
             return sa.func.coalesce(result, fill_value)
