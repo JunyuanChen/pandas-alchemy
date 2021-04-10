@@ -62,6 +62,34 @@ def postgresql_full_outer_join(lhs, rhs, cond, selects):
     return sa.select(selects).select_from(lhs.join(rhs, cond, full=True))
 
 
+@polyfill
+def sane_division(lhs, rhs):
+    sign = sa.func.sign
+    lhs = sa.cast(lhs, sa.FLOAT)
+    rhs = sa.cast(rhs, sa.FLOAT)
+    # Ideally we should be able to handle 0.0 vs -0.0, but due to
+    # the limitations of SQL we will just treat them all as 0.0
+    return sa.case(((lhs == 0) & (rhs == 0), float('nan')),
+                   (rhs == 0, sign(lhs) * float("inf")),
+                   (rhs == float("inf"), sign(lhs) * 0.0),
+                   (rhs == float("-inf"), sign(lhs) * -0.0),
+                   else_=lhs / rhs)
+
+
+@augment("sqlite")
+@with_raw_connection
+def sqlite_sign_function(con):
+    def sign_func(value):
+        if value == 0:
+            return 0
+        elif value > 0:
+            return 1
+        elif value < 0:
+            return -1
+
+    con.create_function("sign", 1, sign_func)
+
+
 @augment("sqlite")
 @with_raw_connection
 def sqlite_floor_function(con):
