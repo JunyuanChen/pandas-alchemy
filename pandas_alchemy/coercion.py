@@ -1,5 +1,6 @@
 import operator
 import sqlalchemy as sa
+from . import dialect
 
 COERCIONS = {}
 
@@ -44,28 +45,40 @@ def app_op_coerced(op, lhs, rhs=None):
 NUMERIC = (int, float, complex)
 
 
+@coerce(operator.truediv, NUMERIC, NUMERIC)
+def truediv_numeric(_, lhs, rhs):
+    return dialect.CURRENT["sane_division"](lhs, rhs)
+
+
 @coerce(operator.add, bool, bool)
 @coerce(operator.sub, bool, bool)
 @coerce(operator.mul, bool, bool)
+@coerce(operator.truediv, bool, bool)
 @coerce(operator.pow, bool, bool)
 def op_bool_bool(op, lhs, rhs):
-    return op(cast(lhs, sa.INTEGER), cast(rhs, sa.INTEGER))
+    lhs = cast(lhs, sa.INTEGER)
+    rhs = cast(rhs, sa.INTEGER)
+    return app_op_coerced(op, lhs, rhs)
 
 
 @coerce(operator.add, bool, NUMERIC)
 @coerce(operator.sub, bool, NUMERIC)
 @coerce(operator.mul, bool, NUMERIC)
+@coerce(operator.truediv, bool, NUMERIC)
 @coerce(operator.pow, bool, NUMERIC)
 def op_bool_numeric(op, lhs, rhs):
-    return op(cast(lhs, sa.INTEGER), rhs)
+    lhs = cast(lhs, sa.INTEGER)
+    return app_op_coerced(op, lhs, rhs)
 
 
 @coerce(operator.add, NUMERIC, bool)
 @coerce(operator.sub, NUMERIC, bool)
 @coerce(operator.mul, NUMERIC, bool)
+@coerce(operator.truediv, NUMERIC, bool)
 @coerce(operator.pow, NUMERIC, bool)
 def op_numeric_bool(op, lhs, rhs):
-    return op(lhs, cast(rhs, sa.INTEGER))
+    rhs = cast(rhs, sa.INTEGER)
+    return app_op_coerced(op, lhs, rhs)
 
 
 __all__ = ['COERCIONS', 'coerce', 'app_op_coerced']

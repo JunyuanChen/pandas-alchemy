@@ -238,11 +238,8 @@ class DataFrame(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
     add, radd = dataframe_op(operator.add)
     sub, rsub = dataframe_op(operator.sub)
     mul, rmul = dataframe_op(operator.mul)
-    div, rdiv = dataframe_op(operator.truediv,
-                             name="div",
-                             before=lambda df: df._cast(sa.NUMERIC))
-    truediv, rtruediv = dataframe_op(operator.truediv,
-                                     before=lambda df: df._cast(sa.NUMERIC))
+    div, rdiv = dataframe_op(operator.truediv, name="div")
+    truediv, rtruediv = dataframe_op(operator.truediv)
     floordiv, rfloordiv = dataframe_op(operator.truediv,
                                        name="floordiv",
                                        after=lambda df: df._app(sa.func.floor))
