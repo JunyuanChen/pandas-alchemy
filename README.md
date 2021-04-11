@@ -58,3 +58,65 @@ raised. Differences between behaviours, including differences in
 exceptions raised (to a reasonable extent), are considered *bugs* for
 the purpose of this project. Please open an issue if you have spotted
 such a difference.
+
+## Usage
+
+1. `pandas_alchemy.init_db(<sqlalchemy database URL>)`
+2. `df = pandas_alchemy.DataFrame.from_table(<table>)`
+3. Treat `df` as a Pandas DataFrame and do something awesome about it.
+4. Profit!!!
+
+### init_db(\*args, \*\*kwargs)
+Create a database connection. If already connected, raise RuntimeError.
+
+`*args` and `**kwargs` are passed directly to `sqlalchemy.create_engine()`.
+See the documentation of `sqlalchemy.create_engien()`
+
+### close_db()
+Close the database connection. If not connected yet, raise RuntimeError.
+
+### DataFrame(index, columns, cte)
+**Probably _not_ something you are looking for.**
+
+Create a DataFrame using index, columns and cte.
+index is a Pandas Index representing the levels in the DataFrame's index.
+columns is a Pandas Index representing the column names.
+cte is a sqlalchemy CTE that backs the DataFrame.
+
+### DataFrame.from_table(table, schema=None, columns=None, index=None)
+Load table from the database as a DataFrame.
+
+If columns is not None, it is taken as an ordered list of
+columns to be included in the DataFrame.
+
+If index is a list-like object, it is taken as an ordered
+list of columns whose values are the DataFrame's index.
+Otherwise, if index is not None, it is taken as the name
+of the column to become the DataFrame's index.
+
+### DataFrame.from_pandas(df, optional=False)
+Convert the Pandas DataFrame df to a DataFrame.
+If df is not an instance of pandas.DataFrame, return it as is
+when optional is True. Otherwise, raise TypeError.
+
+### DataFrame.to_pandas()
+Convert the DataFrame to a Pandas DataFrame.
+
+### Series(index, columns, cte, name)
+**Probably _not_ something you are looking for.**
+
+Create a Series using index, columns and cte, with name name.
+index is a Pandas Index representing the levels in the Series's index.
+columns is a Pandas Index representing the column names.
+cte is a sqlalchemy CTE that backs the Series.
+name is the name of the Series.
+
+### Series.from_pandas(seq, name=None, optional=False)
+Convert the Pandas Series seq to a Series.
+If name is not None, it will be used as the name of
+the resulting Series instead of seq.name.
+If seq is not an instance of pandas.Series, return it as is
+when optional is True, Otherwise, raise TypeError.
+
+### Series.to_pandas()
+Convert the Series to a Pandas Series.
