@@ -1,0 +1,557 @@
+# Series \[38/331\] \[11%\]
+- [X] Series.index
+- [ ] Series.array
+- [ ] Series.values
+- [ ] Series.dtype
+- [X] Series.shape
+- [ ] Series.nbytes
+- [X] Series.ndim
+- [X] Series.size
+- [ ] Series.T
+- [ ] Series.memory\_usage
+- [ ] Series.hasnans
+- [X] Series.empty
+- [ ] Series.dtypes
+- [X] Series.name
+- [ ] Series.flags
+- [ ] Series.set\_flags
+- [ ] Series.astype
+- [ ] Series.convert\_dtypes
+- [ ] Series.infer\_objects
+- [ ] Series.copy
+- [X] Series.bool
+- [ ] Series.to\_numpy
+- [ ] Series.to\_period
+- [ ] Series.to\_timestamp
+- [ ] Series.to\_list
+- [ ] Series.\_\_array\_\_
+- [ ] Series.get
+- [ ] Series.at
+- [X] Series.iat
+- [ ] Series.loc
+- [ ] Series.iloc
+- [X] Series.\_\_iter\_\_
+- [ ] Series.items
+- [X] Series.iteritems
+- [ ] Series.keys
+- [ ] Series.pop
+- [ ] Series.item
+- [ ] Series.xs
+- [X] Series.add
+- [X] Series.sub
+- [X] Series.mul
+- [X] Series.div
+- [X] Series.truediv
+- [X] Series.floordiv
+- [X] Series.mod
+- [X] Series.pow
+- [X] Series.radd
+- [X] Series.rsub
+- [X] Series.rmul
+- [X] Series.rdiv
+- [X] Series.rtruediv
+- [X] Series.rfloordiv
+- [X] Series.rmod
+- [X] Series.rpow
+- [ ] Series.combine
+- [ ] Series.combine\_first
+- [ ] Series.round
+- [X] Series.lt
+- [X] Series.gt
+- [X] Series.le
+- [X] Series.ge
+- [X] Series.ne
+- [X] Series.eq
+- [ ] Series.product
+- [ ] Series.dot
+- [ ] Series.apply
+- [ ] Series.agg
+- [ ] Series.aggregate
+- [ ] Series.transform
+- [ ] Series.map
+- [ ] Series.groupby
+- [ ] Series.rolling
+- [ ] Series.expanding
+- [ ] Series.ewm
+- [ ] Series.pipe
+- [ ] Series.abs
+- [ ] Series.all
+- [ ] Series.any
+- [ ] Series.autocorr
+- [ ] Series.between
+- [ ] Series.clip
+- [ ] Series.corr
+- [ ] Series.count
+- [ ] Series.cov
+- [ ] Series.cummax
+- [ ] Series.cummin
+- [ ] Series.cumprod
+- [ ] Series.cumsum
+- [ ] Series.describe
+- [ ] Series.diff
+- [ ] Series.factorize
+- [ ] Series.kurt
+- [ ] Series.mad
+- [ ] Series.max
+- [ ] Series.mean
+- [ ] Series.median
+- [ ] Series.min
+- [ ] Series.mode
+- [ ] Series.nlargest
+- [ ] Series.nsmallest
+- [ ] Series.pct\_change
+- [ ] Series.prod
+- [ ] Series.quantile
+- [ ] Series.rank
+- [ ] Series.sem
+- [ ] Series.skew
+- [ ] Series.std
+- [ ] Series.sum
+- [ ] Series.var
+- [ ] Series.kurtosis
+- [ ] Series.unique
+- [ ] Series.nunique
+- [ ] Series.is\_unique
+- [ ] Series.is\_monotonic
+- [ ] Series.is\_monotonic\_increasing
+- [ ] Series.is\_monotonic\_decreasing
+- [ ] Series.value\_counts
+- [ ] Series.align
+- [ ] Series.drop
+- [ ] Series.droplevel
+- [ ] Series.drop\_duplicates
+- [ ] Series.duplicated
+- [ ] Series.equals
+- [ ] Series.first
+- [X] Series.head
+- [ ] Series.idxmax
+- [ ] Series.idxmin
+- [ ] Series.isin
+- [ ] Series.last
+- [ ] Series.reindex
+- [ ] Series.reindex\_like
+- [ ] Series.rename
+- [ ] Series.rename\_axis
+- [ ] Series.reset\_index
+- [ ] Series.sample
+- [ ] Series.set\_axis
+- [ ] Series.take
+- [X] Series.tail
+- [ ] Series.truncate
+- [ ] Series.where
+- [ ] Series.mask
+- [ ] Series.add\_prefix
+- [ ] Series.add\_suffix
+- [ ] Series.filter
+- [ ] Series.backfill
+- [ ] Series.bfill
+- [ ] Series.dropna
+- [ ] Series.ffill
+- [ ] Series.fillna
+- [ ] Series.interpolate
+- [X] Series.isna
+- [X] Series.isnull
+- [X] Series.notna
+- [X] Series.notnull
+- [ ] Series.pad
+- [ ] Series.replace
+- [ ] Series.argsort
+- [ ] Series.argmin
+- [ ] Series.argmax
+- [ ] Series.reorder\_levels
+- [ ] Series.sort\_values
+- [ ] Series.sort\_index
+- [ ] Series.swaplevel
+- [ ] Series.unstack
+- [ ] Series.explode
+- [ ] Series.searchsorted
+- [ ] Series.ravel
+- [ ] Series.repeat
+- [ ] Series.squeeze
+- [ ] Series.view
+- [ ] Series.append
+- [ ] Series.compare
+- [ ] Series.update
+- [ ] Series.asfreq
+- [ ] Series.asof
+- [ ] Series.shift
+- [ ] Series.first\_valid\_index
+- [ ] Series.last\_valid\_index
+- [ ] Series.resample
+- [ ] Series.tz\_convert
+- [ ] Series.tz\_localize
+- [ ] Series.at\_time
+- [ ] Series.between\_time
+- [ ] Series.tshift
+- [ ] Series.slice\_shift
+- [ ] Series.dt.date
+- [ ] Series.dt.time
+- [ ] Series.dt.timetz
+- [ ] Series.dt.year
+- [ ] Series.dt.month
+- [ ] Series.dt.day
+- [ ] Series.dt.hour
+- [ ] Series.dt.minute
+- [ ] Series.dt.second
+- [ ] Series.dt.microsecond
+- [ ] Series.dt.nanosecond
+- [ ] Series.dt.week
+- [ ] Series.dt.weekofyear
+- [ ] Series.dt.dayofweek
+- [ ] Series.dt.day\_of\_week
+- [ ] Series.dt.weekday
+- [ ] Series.dt.dayofyear
+- [ ] Series.dt.day\_of\_year
+- [ ] Series.dt.quarter
+- [ ] Series.dt.is\_month\_start
+- [ ] Series.dt.is\_month\_end
+- [ ] Series.dt.is\_quarter\_start
+- [ ] Series.dt.is\_quarter\_end
+- [ ] Series.dt.is\_year\_start
+- [ ] Series.dt.is\_year\_end
+- [ ] Series.dt.is\_leap\_year
+- [ ] Series.dt.daysinmonth
+- [ ] Series.dt.days\_in\_month
+- [ ] Series.dt.tz
+- [ ] Series.dt.freq
+- [ ] Series.dt.to\_period
+- [ ] Series.dt.to\_pydatetime
+- [ ] Series.dt.tz\_localize
+- [ ] Series.dt.tz\_convert
+- [ ] Series.dt.normalize
+- [ ] Series.dt.strftime
+- [ ] Series.dt.round
+- [ ] Series.dt.floor
+- [ ] Series.dt.ceil
+- [ ] Series.dt.month\_name
+- [ ] Series.dt.day\_name
+- [ ] Series.dt.qyear
+- [ ] Series.dt.start\_time
+- [ ] Series.dt.end\_time
+- [ ] Series.dt.days
+- [ ] Series.dt.seconds
+- [ ] Series.dt.microseconds
+- [ ] Series.dt.nanoseconds
+- [ ] Series.dt.components
+- [ ] Series.dt.to\_pytimedelta
+- [ ] Series.dt.total\_seconds
+- [ ] Series.str.capitalize
+- [ ] Series.str.casefold
+- [ ] Series.str.cat
+- [ ] Series.str.center
+- [ ] Series.str.contains
+- [ ] Series.str.count
+- [ ] Series.str.decode
+- [ ] Series.str.encode
+- [ ] Series.str.endswith
+- [ ] Series.str.extract
+- [ ] Series.str.extractall
+- [ ] Series.str.find
+- [ ] Series.str.findall
+- [ ] Series.str.get
+- [ ] Series.str.index
+- [ ] Series.str.join
+- [ ] Series.str.len
+- [ ] Series.str.ljust
+- [ ] Series.str.lower
+- [ ] Series.str.lstrip
+- [ ] Series.str.match
+- [ ] Series.str.normalize
+- [ ] Series.str.pad
+- [ ] Series.str.partition
+- [ ] Series.str.repeat
+- [ ] Series.str.replace
+- [ ] Series.str.rfind
+- [ ] Series.str.rindex
+- [ ] Series.str.rjust
+- [ ] Series.str.rpartition
+- [ ] Series.str.rstrip
+- [ ] Series.str.slice
+- [ ] Series.str.slice\_replace
+- [ ] Series.str.split
+- [ ] Series.str.rsplit
+- [ ] Series.str.startswith
+- [ ] Series.str.strip
+- [ ] Series.str.swapcase
+- [ ] Series.str.title
+- [ ] Series.str.translate
+- [ ] Series.str.upper
+- [ ] Series.str.wrap
+- [ ] Series.str.zfill
+- [ ] Series.str.isalnum
+- [ ] Series.str.isalpha
+- [ ] Series.str.isdigit
+- [ ] Series.str.isspace
+- [ ] Series.str.islower
+- [ ] Series.str.isupper
+- [ ] Series.str.istitle
+- [ ] Series.str.isnumeric
+- [ ] Series.str.isdecimal
+- [ ] Series.str.get\_dummies
+- [ ] Series.cat.categories
+- [ ] Series.cat.ordered
+- [ ] Series.cat.codes
+- [ ] Series.cat.rename\_categories
+- [ ] Series.cat.reorder\_categories
+- [ ] Series.cat.add\_categories
+- [ ] Series.cat.remove\_categories
+- [ ] Series.cat.remove\_unused\_categories
+- [ ] Series.cat.set\_categories
+- [ ] Series.cat.as\_ordered
+- [ ] Series.cat.as\_unordered
+- [ ] Series.sparse.npoints
+- [ ] Series.sparse.density
+- [ ] Series.sparse.fill\_value
+- [ ] Series.sparse.sp\_values
+- [ ] Series.sparse.from\_coo
+- [ ] Series.sparse.to\_coo
+- [ ] Series.attrs
+- [ ] Series.plot
+- [ ] Series.plot.area
+- [ ] Series.plot.bar
+- [ ] Series.plot.barh
+- [ ] Series.plot.box
+- [ ] Series.plot.density
+- [ ] Series.plot.hist
+- [ ] Series.plot.kde
+- [ ] Series.plot.line
+- [ ] Series.plot.pie
+- [ ] Series.hist
+- [ ] Series.to\_pickle
+- [ ] Series.to\_csv
+- [ ] Series.to\_dict
+- [ ] Series.to\_excel
+- [ ] Series.to\_frame
+- [ ] Series.to\_xarray
+- [ ] Series.to\_hdf
+- [ ] Series.to\_sql
+- [ ] Series.to\_json
+- [ ] Series.to\_string
+- [ ] Series.to\_clipboard
+- [ ] Series.to\_latex
+- [ ] Series.to\_markdown
+
+# DataFrame \[40/223\] \[17%\]
+- [X] DataFrame.index
+- [X] DataFrame.columns
+- [ ] DataFrame.dtypes
+- [ ] DataFrame.info
+- [ ] DataFrame.select\_dtypes
+- [ ] DataFrame.values
+- [ ] DataFrame.axes
+- [X] DataFrame.ndim
+- [X] DataFrame.size
+- [X] DataFrame.shape
+- [ ] DataFrame.memory\_usage
+- [X] DataFrame.empty
+- [ ] DataFrame.set\_flags
+- [ ] DataFrame.astype
+- [ ] DataFrame.convert\_dtypes
+- [ ] DataFrame.infer\_objects
+- [ ] DataFrame.copy
+- [X] DataFrame.bool
+- [X] DataFrame.head
+- [ ] DataFrame.at
+- [X] DataFrame.iat
+- [ ] DataFrame.loc
+- [ ] DataFrame.iloc
+- [ ] DataFrame.insert
+- [ ] DataFrame.\_\_iter\_\_
+- [ ] DataFrame.items
+- [X] DataFrame.iteritems
+- [ ] DataFrame.keys
+- [X] DataFrame.iterrows
+- [X] DataFrame.itertuples
+- [ ] DataFrame.lookup
+- [ ] DataFrame.pop
+- [X] DataFrame.tail
+- [ ] DataFrame.xs
+- [ ] DataFrame.get
+- [ ] DataFrame.isin
+- [ ] DataFrame.where
+- [ ] DataFrame.mask
+- [ ] DataFrame.query
+- [X] DataFrame.add
+- [X] DataFrame.sub
+- [X] DataFrame.mul
+- [X] DataFrame.div
+- [X] DataFrame.truediv
+- [X] DataFrame.floordiv
+- [X] DataFrame.mod
+- [X] DataFrame.pow
+- [ ] DataFrame.dot
+- [X] DataFrame.radd
+- [X] DataFrame.rsub
+- [X] DataFrame.rmul
+- [X] DataFrame.rdiv
+- [X] DataFrame.rtruediv
+- [X] DataFrame.rfloordiv
+- [X] DataFrame.rmod
+- [X] DataFrame.rpow
+- [X] DataFrame.lt
+- [X] DataFrame.gt
+- [X] DataFrame.le
+- [X] DataFrame.ge
+- [X] DataFrame.ne
+- [X] DataFrame.eq
+- [ ] DataFrame.combine
+- [ ] DataFrame.combine\_first
+- [ ] DataFrame.apply
+- [ ] DataFrame.applymap
+- [ ] DataFrame.pipe
+- [ ] DataFrame.agg
+- [ ] DataFrame.aggregate
+- [ ] DataFrame.transform
+- [ ] DataFrame.groupby
+- [ ] DataFrame.rolling
+- [ ] DataFrame.expanding
+- [ ] DataFrame.ewm
+- [ ] DataFrame.abs
+- [ ] DataFrame.all
+- [ ] DataFrame.any
+- [ ] DataFrame.clip
+- [ ] DataFrame.corr
+- [ ] DataFrame.corrwith
+- [ ] DataFrame.count
+- [ ] DataFrame.cov
+- [ ] DataFrame.cummax
+- [ ] DataFrame.cummin
+- [ ] DataFrame.cumprod
+- [ ] DataFrame.cumsum
+- [ ] DataFrame.describe
+- [ ] DataFrame.diff
+- [ ] DataFrame.eval
+- [ ] DataFrame.kurt
+- [ ] DataFrame.kurtosis
+- [ ] DataFrame.mad
+- [ ] DataFrame.max
+- [ ] DataFrame.mean
+- [ ] DataFrame.median
+- [ ] DataFrame.min
+- [ ] DataFrame.mode
+- [ ] DataFrame.pct\_change
+- [ ] DataFrame.prod
+- [ ] DataFrame.product
+- [ ] DataFrame.quantile
+- [ ] DataFrame.rank
+- [ ] DataFrame.round
+- [ ] DataFrame.sem
+- [ ] DataFrame.skew
+- [ ] DataFrame.sum
+- [ ] DataFrame.std
+- [ ] DataFrame.var
+- [ ] DataFrame.nunique
+- [ ] DataFrame.value\_counts
+- [ ] DataFrame.add\_prefix
+- [ ] DataFrame.add\_suffix
+- [ ] DataFrame.align
+- [ ] DataFrame.at\_time
+- [ ] DataFrame.between\_time
+- [ ] DataFrame.drop
+- [ ] DataFrame.drop\_duplicates
+- [ ] DataFrame.duplicated
+- [ ] DataFrame.equals
+- [ ] DataFrame.filter
+- [ ] DataFrame.first
+- [ ] DataFrame.head
+- [ ] DataFrame.idxmax
+- [ ] DataFrame.idxmin
+- [ ] DataFrame.last
+- [ ] DataFrame.reindex
+- [ ] DataFrame.reindex\_like
+- [ ] DataFrame.rename
+- [ ] DataFrame.rename\_axis
+- [ ] DataFrame.reset\_index
+- [ ] DataFrame.sample
+- [ ] DataFrame.set\_axis
+- [ ] DataFrame.set\_index
+- [X] DataFrame.tail
+- [ ] DataFrame.take
+- [ ] DataFrame.truncate
+- [ ] DataFrame.backfill
+- [ ] DataFrame.bfill
+- [ ] DataFrame.dropna
+- [ ] DataFrame.ffill
+- [ ] DataFrame.fillna
+- [ ] DataFrame.interpolate
+- [X] DataFrame.isna
+- [X] DataFrame.isnull
+- [X] DataFrame.notna
+- [X] DataFrame.notnull
+- [ ] DataFrame.pad
+- [ ] DataFrame.replace
+- [ ] DataFrame.droplevel
+- [ ] DataFrame.pivot
+- [ ] DataFrame.pivot\_table
+- [ ] DataFrame.reorder\_levels
+- [ ] DataFrame.sort\_values
+- [ ] DataFrame.sort\_index
+- [ ] DataFrame.nlargest
+- [ ] DataFrame.nsmallest
+- [ ] DataFrame.swaplevel
+- [ ] DataFrame.stack
+- [ ] DataFrame.unstack
+- [ ] DataFrame.swapaxes
+- [ ] DataFrame.melt
+- [ ] DataFrame.explode
+- [ ] DataFrame.squeeze
+- [ ] DataFrame.to\_xarray
+- [ ] DataFrame.T
+- [ ] DataFrame.transpose
+- [ ] DataFrame.append
+- [ ] DataFrame.assign
+- [ ] DataFrame.compare
+- [ ] DataFrame.join
+- [ ] DataFrame.merge
+- [ ] DataFrame.update
+- [ ] DataFrame.asfreq
+- [ ] DataFrame.asof
+- [ ] DataFrame.shift
+- [ ] DataFrame.slice\_shift
+- [ ] DataFrame.tshift
+- [ ] DataFrame.first\_valid\_index
+- [ ] DataFrame.last\_valid\_index
+- [ ] DataFrame.resample
+- [ ] DataFrame.to\_period
+- [ ] DataFrame.to\_timestamp
+- [ ] DataFrame.tz\_convert
+- [ ] DataFrame.tz\_localize
+- [ ] DataFrame.attrs
+- [ ] DataFrame.plot
+- [ ] DataFrame.plot.area
+- [ ] DataFrame.plot.bar
+- [ ] DataFrame.plot.barh
+- [ ] DataFrame.plot.box
+- [ ] DataFrame.plot.density
+- [ ] DataFrame.plot.hexbin
+- [ ] DataFrame.plot.hist
+- [ ] DataFrame.plot.kde
+- [ ] DataFrame.plot.line
+- [ ] DataFrame.plot.pie
+- [ ] DataFrame.plot.scatter
+- [ ] DataFrame.boxplot
+- [ ] DataFrame.hist
+- [ ] DataFrame.sparse.density
+- [ ] DataFrame.sparse.from\_spmatrix
+- [ ] DataFrame.sparse.to\_coo
+- [ ] DataFrame.sparse.to\_dense
+- [ ] DataFrame.from\_dict
+- [ ] DataFrame.from\_records
+- [ ] DataFrame.to\_parquet
+- [ ] DataFrame.to\_pickle
+- [ ] DataFrame.to\_csv
+- [ ] DataFrame.to\_hdf
+- [ ] DataFrame.to\_sql
+- [ ] DataFrame.to\_dict
+- [ ] DataFrame.to\_excel
+- [ ] DataFrame.to\_json
+- [ ] DataFrame.to\_html
+- [ ] DataFrame.to\_feather
+- [ ] DataFrame.to\_latex
+- [ ] DataFrame.to\_stata
+- [ ] DataFrame.to\_gbq
+- [ ] DataFrame.to\_records
+- [ ] DataFrame.to\_string
+- [ ] DataFrame.to\_clipboard
+- [ ] DataFrame.to\_markdown
+- [ ] DataFrame.style

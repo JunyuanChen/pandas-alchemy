@@ -120,3 +120,11 @@ when optional is True, Otherwise, raise TypeError.
 
 ### Series.to\_pandas()
 Convert the Series to a Pandas Series.
+
+## Pandas API Coverage
+See [API\_COVERAGE.md](API_COVERAGE.md).
+
+## Known Issues & Limitations
+- Cannot distinguish `0.0` and `-0.0` (IEEE float)
+- Returns None for NaN in SQLite3 if every value in the column is None
+- Lacks support for arithmetic between two MultiIndex DataFrame/Series
