@@ -66,13 +66,13 @@ such a difference.
 3. Treat `df` as a Pandas DataFrame and do something awesome about it.
 4. Profit!!!
 
-### init_db(\*args, \*\*kwargs)
+### init\_db(\*args, \*\*kwargs)
 Create a database connection. If already connected, raise RuntimeError.
 
-`*args` and `**kwargs` are passed directly to `sqlalchemy.create_engine()`.
-See the documentation of `sqlalchemy.create_engien()`
+\*args and \*\*kwargs are passed directly to sqlalchemy.create\_engine().
+See the documentation of sqlalchemy.create\_engien()
 
-### close_db()
+### close\_db()
 Close the database connection. If not connected yet, raise RuntimeError.
 
 ### DataFrame(index, columns, cte)
@@ -83,7 +83,7 @@ index is a Pandas Index representing the levels in the DataFrame's index.
 columns is a Pandas Index representing the column names.
 cte is a sqlalchemy CTE that backs the DataFrame.
 
-### DataFrame.from_table(table, schema=None, columns=None, index=None)
+### DataFrame.from\_table(table, schema=None, columns=None, index=None)
 Load table from the database as a DataFrame.
 
 If columns is not None, it is taken as an ordered list of
@@ -94,12 +94,12 @@ list of columns whose values are the DataFrame's index.
 Otherwise, if index is not None, it is taken as the name
 of the column to become the DataFrame's index.
 
-### DataFrame.from_pandas(df, optional=False)
+### DataFrame.from\_pandas(df, optional=False)
 Convert the Pandas DataFrame df to a DataFrame.
 If df is not an instance of pandas.DataFrame, return it as is
 when optional is True. Otherwise, raise TypeError.
 
-### DataFrame.to_pandas()
+### DataFrame.to\_pandas()
 Convert the DataFrame to a Pandas DataFrame.
 
 ### Series(index, columns, cte, name)
@@ -111,12 +111,12 @@ columns is a Pandas Index representing the column names.
 cte is a sqlalchemy CTE that backs the Series.
 name is the name of the Series.
 
-### Series.from_pandas(seq, name=None, optional=False)
+### Series.from\_pandas(seq, name=None, optional=False)
 Convert the Pandas Series seq to a Series.
 If name is not None, it will be used as the name of
 the resulting Series instead of seq.name.
 If seq is not an instance of pandas.Series, return it as is
 when optional is True, Otherwise, raise TypeError.
 
-### Series.to_pandas()
+### Series.to\_pandas()
 Convert the Series to a Pandas Series.
