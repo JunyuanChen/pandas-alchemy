@@ -63,18 +63,59 @@ def postgresql_full_outer_join(lhs, rhs, cond, selects):
 
 
 @polyfill
-def sane_division(lhs, rhs, floor=False):
-    sign = sa.func.sign
-    lhs = sa.cast(lhs, sa.FLOAT)
-    rhs = sa.cast(rhs, sa.FLOAT)
-    expr = sa.func.floor(lhs / rhs) if floor else lhs / rhs
-    # Ideally we should be able to handle 0.0 vs -0.0, but due to
-    # the limitations of SQL we will just treat them all as 0.0
-    return sa.case(((lhs == 0) & (rhs == 0), float('nan')),
-                   (rhs == 0, sign(lhs) * float("inf")),
-                   (rhs == float("inf"), sign(lhs) * 0.0),
-                   (rhs == float("-inf"), sign(lhs) * -0.0),
-                   else_=expr)
+def is_inf(value):
+    return False
+
+
+@augment("sqlite")
+@with_raw_connection
+def sqlite_is_inf_function(con):
+    def is_inf_func(value):
+        if value is None:
+            return False
+        return math.isinf(value)
+
+    con.create_function("is_inf", 1, is_inf_func)
+
+
+@augment("sqlite")
+@refill("is_inf")
+def sqlite_is_inf(value):
+    return sa.func.is_inf(value)
+
+
+@augment("postgresql")
+@refill("is_inf")
+def postgresql_is_inf(value):
+    return value.in_((sa.literal(float('inf')), sa.literal(float('-inf'))))
+
+
+@polyfill
+def is_nan(value):
+    return False
+
+
+@augment("sqlite")
+@with_raw_connection
+def sqlite_is_nan_function(con):
+    def is_nan_func(value):
+        if value is None:
+            return True
+        return math.isnan(value)
+
+    con.create_function("is_nan", 1, is_nan_func)
+
+
+@augment("sqlite")
+@refill("is_nan")
+def sqlite_is_nan(value):
+    return sa.func.is_nan(value)
+
+
+@augment("postgresql")
+@refill("is_nan")
+def postgresql_is_nan(value):
+    return value == sa.literal(float("nan"))
 
 
 @augment("sqlite")

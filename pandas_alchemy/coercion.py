@@ -45,14 +45,44 @@ def app_op_coerced(op, lhs, rhs=None):
 NUMERIC = (int, float, complex)
 
 
+def sane_division(lhs, rhs, floor=False):
+    # sa.cast() is used to ensure lhs and rhs are Column expressions
+    lhs = sa.cast(lhs, sa.FLOAT)
+    rhs = sa.cast(rhs, sa.FLOAT)
+    is_inf = dialect.CURRENT["is_inf"]
+    is_nan = dialect.CURRENT["is_nan"]
+    sign = sa.func.sign
+    # Ideally we should be able to handle 0.0 vs -0.0, but due to
+    # the limitations of SQL we will just treat them all as 0.0
+    return sa.case((is_inf(lhs) & is_inf(rhs), float('nan')),
+                   (is_nan(lhs), lhs), (is_inf(rhs), 0.0),
+                   (rhs == 0, sign(lhs) * float("inf")),
+                   else_=sa.func.floor(lhs / rhs) if floor else lhs / rhs)
+
+
 @coerce(operator.truediv, NUMERIC, NUMERIC)
 def truediv_numeric(_, lhs, rhs):
-    return dialect.CURRENT["sane_division"](lhs, rhs)
+    return sane_division(lhs, rhs)
 
 
 @coerce(operator.floordiv, NUMERIC, NUMERIC)
 def floordiv_numeric(_, lhs, rhs):
-    return dialect.CURRENT["sane_division"](lhs, rhs, floor=True)
+    return sane_division(lhs, rhs, floor=True)
+
+
+@coerce(operator.mod, NUMERIC, NUMERIC)
+def mod_numeric(_, lhs, rhs):
+    expr = sa.cast(lhs, sa.NUMERIC) % sa.cast(rhs, sa.NUMERIC)
+    # See sane_division()
+    lhs = sa.cast(lhs, sa.FLOAT)
+    rhs = sa.cast(rhs, sa.FLOAT)
+    is_inf = dialect.CURRENT["is_inf"]
+    is_nan = dialect.CURRENT["is_nan"]
+    sign = sa.func.sign
+    return sa.case((is_inf(lhs) | is_nan(lhs) | (rhs == 0), float("nan")),
+                   (is_inf(rhs) & (sign(lhs) == -sign(rhs)), rhs),
+                   (is_inf(rhs) & (sign(lhs) != -sign(rhs)), lhs),
+                   else_=expr)
 
 
 @coerce(operator.add, bool, bool)
