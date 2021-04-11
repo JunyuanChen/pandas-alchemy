@@ -50,6 +50,11 @@ def truediv_numeric(_, lhs, rhs):
     return dialect.CURRENT["sane_division"](lhs, rhs)
 
 
+@coerce(operator.floordiv, NUMERIC, NUMERIC)
+def floordiv_numeric(_, lhs, rhs):
+    return dialect.CURRENT["sane_division"](lhs, rhs, floor=True)
+
+
 @coerce(operator.add, bool, bool)
 @coerce(operator.sub, bool, bool)
 @coerce(operator.mul, bool, bool)

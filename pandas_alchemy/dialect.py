@@ -63,17 +63,18 @@ def postgresql_full_outer_join(lhs, rhs, cond, selects):
 
 
 @polyfill
-def sane_division(lhs, rhs):
+def sane_division(lhs, rhs, floor=False):
     sign = sa.func.sign
     lhs = sa.cast(lhs, sa.FLOAT)
     rhs = sa.cast(rhs, sa.FLOAT)
+    expr = sa.func.floor(lhs / rhs) if floor else lhs / rhs
     # Ideally we should be able to handle 0.0 vs -0.0, but due to
     # the limitations of SQL we will just treat them all as 0.0
     return sa.case(((lhs == 0) & (rhs == 0), float('nan')),
                    (rhs == 0, sign(lhs) * float("inf")),
                    (rhs == float("inf"), sign(lhs) * 0.0),
                    (rhs == float("-inf"), sign(lhs) * -0.0),
-                   else_=lhs / rhs)
+                   else_=expr)
 
 
 @augment("sqlite")

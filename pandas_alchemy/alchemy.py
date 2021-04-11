@@ -240,9 +240,7 @@ class DataFrame(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
     mul, rmul = dataframe_op(operator.mul)
     div, rdiv = dataframe_op(operator.truediv, name="div")
     truediv, rtruediv = dataframe_op(operator.truediv)
-    floordiv, rfloordiv = dataframe_op(operator.truediv,
-                                       name="floordiv",
-                                       after=lambda df: df._app(sa.func.floor))
+    floordiv, rfloordiv = dataframe_op(operator.floordiv)
     mod, rmod = dataframe_op(operator.mod)
     pow, rpow = dataframe_op(operator.pow)
 
@@ -416,14 +414,9 @@ class Series(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
     add, radd = series_op(operator.add)
     sub, rsub = series_op(operator.sub)
     mul, rmul = series_op(operator.mul)
-    div, rdiv = series_op(operator.truediv,
-                          name="div",
-                          before=lambda seq: seq._cast(sa.NUMERIC))
-    truediv, rtruediv = series_op(operator.truediv,
-                                  before=lambda seq: seq._cast(sa.NUMERIC))
-    floordiv, rfloordiv = series_op(operator.truediv,
-                                    name="floordiv",
-                                    after=lambda seq: seq._app(sa.func.floor))
+    div, rdiv = series_op(operator.truediv, name="div")
+    truediv, rtruediv = series_op(operator.truediv)
+    floordiv, rfloordiv = series_op(operator.floordiv)
     mod, rmod = series_op(operator.mod)
     pow, rpow = series_op(operator.pow)
 
