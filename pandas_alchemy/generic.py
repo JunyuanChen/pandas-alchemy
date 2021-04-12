@@ -74,6 +74,10 @@ class GenericMixin:
     def notna(self):
         self._app(lambda c: c.is_not(None), inplace=True)
 
+    @utils.copied
+    def abs(self):
+        self._app(sa.func.abs, inplace=True)
+
     isnull = isna
     notnull = notna
 
