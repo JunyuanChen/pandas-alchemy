@@ -1,0 +1,41 @@
+name: Continuous Integration
+on:
+  - push
+  - pull_request
+
+jobs:
+  check-crlf:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Check CRLF endings
+      uses: erclu/check-crlf@aa3b06f194e51f43f91cb91b549222e2f33a9935
+
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.7'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8 yapf
+    - name: Lint code
+      run: |
+        flake8 pandas_alchemy/
+    - name: Check style
+      run: |
+        TMP_FILE=$(mktemp)
+        STATUS=0
+        for src_file in pandas_alchemy/*.py; do
+          yapf "$src_file" > "$TMP_FILE"
+          if diff -u "$src_file" "$TMP_FILE"; then
+            STATUS=1
+          fi
+        done
+        exit "$STATUS"
