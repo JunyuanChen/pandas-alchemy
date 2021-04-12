@@ -30,13 +30,4 @@ jobs:
         flake8 pandas_alchemy/
     - name: Check style
       run: |
-        TMP_FILE=$(mktemp)
-        STATUS=0
-        for src_file in pandas_alchemy/*.py; do
-          yapf "$src_file" > "$TMP_FILE"
-          if ! diff -u --color=always "$src_file" "$TMP_FILE"; then
-            echo "[ERROR] File $src_file does not conform to YAPF style"
-            STATUS=1
-          fi
-        done
-        exit "$STATUS"
+        sh yapf.sh
