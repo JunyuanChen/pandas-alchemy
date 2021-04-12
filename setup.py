@@ -13,7 +13,7 @@ setuptools.setup(
     version="0.0.1",
     author="Junyuan Chen",
     author_email="junyuan.chen.c@gmail.com",
-    description="SQL based, Pandas compatible DataFrame & Series",
+    description="SQL based, pandas compatible DataFrame & Series",
     license="MIT",
     url="https://github.com/JunyuanChen/pandas-alchemy",
     packages=["pandas_alchemy"],

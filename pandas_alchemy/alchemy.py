@@ -147,9 +147,9 @@ class DataFrame(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
         if takeable:
             col = utils.wrap(col, len(self._columns))
             if col < 0 or col >= len(self._columns):
-                # TODO Monitor changes in Pandas and adjust "axis 0"
+                # TODO Monitor changes in pandas and adjust "axis 0"
                 #
-                # While technically it should be axis 1, Pandas 1.2.3
+                # While technically it should be axis 1, pandas 1.2.3
                 # says axis 0 in the corresponding exception.
                 raise IndexError(f"index {col} is out of bounds for "
                                  f"axis 0 with size {len(self._columns)}")
@@ -270,7 +270,7 @@ class DataFrame(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
         if not isinstance(df, pd.DataFrame):
             if optional:
                 return df
-            raise TypeError("Must be a Pandas DataFrame")
+            raise TypeError("Must be a pandas DataFrame")
         query = sa.union_all(
             *[row_to_query(index, data) for index, data in df.iterrows()])
         query.bind = db.metadata().bind
@@ -446,7 +446,7 @@ class Series(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
         if not isinstance(seq, pd.Series):
             if optional:
                 return seq
-            raise TypeError("Must be a Pandas Series")
+            raise TypeError("Must be a pandas Series")
         if name is None:
             name = seq.name
         query = sa.union_all(

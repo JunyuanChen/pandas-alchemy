@@ -5,7 +5,7 @@ from .alchemy import DataFrame, Series
 def use_repr_workaround():
     """
     Until we actually implement __repr__() for DataFrame and Series,
-    convert DataFrame and Series to their Pandas counterpart and use
+    convert DataFrame and Series to their pandas counterpart and use
     that __repr__() method.
 
     This function is intentionally not exported. It is subject to
