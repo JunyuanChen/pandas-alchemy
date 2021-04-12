@@ -10,7 +10,7 @@ def read_file(file_name):
 
 setuptools.setup(
     name="pandas-alchemy",
-    version="0.0.1",
+    version="0.0.2",
     author="Junyuan Chen",
     author_email="junyuan.chen.c@gmail.com",
     description="SQL based, pandas compatible DataFrame & Series",
