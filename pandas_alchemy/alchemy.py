@@ -392,7 +392,7 @@ class Series(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
             other = list(other)
             if len(other) == 1:
                 col = app_op(self._the_col, other[0])
-                self._cte = sa.select(self._idx + [col]).cte()
+                self._cte = sa.select(self._idx() + [col]).cte()
                 return
             row_count = len(self)
             if len(other) != row_count:
@@ -408,6 +408,7 @@ class Series(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
             col = app_op(this._the_col, other._the_col)
             query = sa.select(this._idx() + [col]).select_from(joined)
             self._cte = query.cte()
+            return
         raise TypeError(f"Cannot broadcast np.ndarray with "
                         f"operand of type {type(other)}")
 
