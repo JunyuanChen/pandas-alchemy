@@ -331,7 +331,7 @@
 - [ ] Series.to\_latex
 - [ ] Series.to\_markdown
 
-# DataFrame \[40/223\] \[17%\]
+# DataFrame \[41/223\] \[18%\]
 - [X] DataFrame.index
 - [X] DataFrame.columns
 - [ ] DataFrame.dtypes
@@ -397,7 +397,7 @@
 - [ ] DataFrame.combine
 - [ ] DataFrame.combine\_first
 - [ ] DataFrame.apply
-- [ ] DataFrame.applymap
+- [X] DataFrame.applymap
 - [ ] DataFrame.pipe
 - [ ] DataFrame.agg
 - [ ] DataFrame.aggregate

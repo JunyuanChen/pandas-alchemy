@@ -251,6 +251,15 @@ class DataFrame(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
     ge = dataframe_cmp(operator.ge)
     gt = dataframe_cmp(operator.gt)
 
+    @utils.copied
+    def applymap(func, na_action=None):
+        def app_func(col):
+            if na_action is None:
+                return func(col)
+            return sa.case((col.is_(None), col), else_=func(col))
+
+        self._app(app_func, inplace=True)
+
     def to_pandas(self):
         index = []
         columns = []
