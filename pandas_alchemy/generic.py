@@ -66,13 +66,13 @@ class GenericMixin:
         cols = [func(c) for c in self._cols()]
         self._cte = sa.select(self._idx() + cols).cte()
 
+    @utils.copied
     def isna(self):
-        cols = [c.is_(None) for c in self._cols()]
-        self._cte = sa.select(self._idx() + cols).cte()
+        self._app(lambda c: c.is_(None), inplace=True)
 
+    @utils.copied
     def notna(self):
-        cols = [c.is_not(None) for c in self._cols()]
-        self._cte = sa.select(self._idx() + cols).cte()
+        self._app(lambda c: c.is_not(None), inplace=True)
 
     isnull = isna
     notnull = notna
