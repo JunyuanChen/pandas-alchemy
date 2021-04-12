@@ -78,6 +78,13 @@ class GenericMixin:
     def abs(self):
         self._app(sa.func.abs, inplace=True)
 
+    def pipe(self, func, *args, **kwargs):
+        if callable(func):
+            return func(self, *args, **kwargs)
+        func, data_keyword = func
+        kwargs[data_keyword] = self
+        return func(*args, **kwargs)
+
     isnull = isna
     notnull = notna
 

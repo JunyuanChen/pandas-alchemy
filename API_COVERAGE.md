@@ -1,4 +1,4 @@
-# Series \[39/331\] \[11%\]
+# Series \[40/331\] \[12%\]
 - [X] Series.index
 - [ ] Series.array
 - [ ] Series.values
@@ -73,7 +73,7 @@
 - [ ] Series.rolling
 - [ ] Series.expanding
 - [ ] Series.ewm
-- [ ] Series.pipe
+- [X] Series.pipe
 - [X] Series.abs
 - [ ] Series.all
 - [ ] Series.any
@@ -331,7 +331,7 @@
 - [ ] Series.to\_latex
 - [ ] Series.to\_markdown
 
-# DataFrame \[42/223\] \[18%\]
+# DataFrame \[43/223\] \[19%\]
 - [X] DataFrame.index
 - [X] DataFrame.columns
 - [ ] DataFrame.dtypes
@@ -398,7 +398,7 @@
 - [ ] DataFrame.combine\_first
 - [ ] DataFrame.apply
 - [X] DataFrame.applymap
-- [ ] DataFrame.pipe
+- [X] DataFrame.pipe
 - [ ] DataFrame.agg
 - [ ] DataFrame.aggregate
 - [ ] DataFrame.transform
