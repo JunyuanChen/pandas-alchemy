@@ -252,7 +252,7 @@ class DataFrame(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
     gt = dataframe_cmp(operator.gt)
 
     @utils.copied
-    def applymap(func, na_action=None):
+    def applymap(self, func, na_action=None):
         def app_func(col):
             if na_action is None:
                 return func(col)
