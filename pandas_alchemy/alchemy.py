@@ -253,6 +253,10 @@ class DataFrame(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
 
     @utils.copied
     def applymap(self, func, na_action=None):
+        if na_action not in (None, 'ignore'):
+            raise ValueError(f"na_action must be 'ignore' or None. "
+                             f"Got {repr(na_action)}")
+
         def app_func(col):
             if na_action is None:
                 return func(col)
