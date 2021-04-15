@@ -22,6 +22,20 @@ class BaseFrame:
         total = len(self._index) + len(self._columns)
         return list(self._cte.columns)[len(self._index):total]
 
+    def _lvl_at(self, i):
+        if i in self._index:
+            i = self._index.get_loc(i)
+        else:
+            i = utils.wrap(i, len(self._index))
+        if i < 0:
+            raise IndexError(f"Too many levels: Index has only "
+                             f"{len(self._index)} levels, {i} "
+                             f"is not a valid level number")
+        if i >= len(self._index):
+            raise IndexError(f"Too many levels: Index has only "
+                             f"{len(self._index)} levels, not {i}")
+        return self._idx_at(i)
+
     def _idx_at(self, i):
         return self._cte.columns[i]
 
@@ -73,14 +87,14 @@ class BaseFrame:
     def _join_idx_level(self, other, level, select_cols):
         if not self._is_mindex:
             idx = other._idx()
-            join_cond = self._idx_at(0) == other._idx_at(level)
+            join_cond = self._idx_at(0) == other._lvl_at(level)
             joined = other._cte.join(self._cte, join_cond, isouter=True)
             self._cte = sa.select(idx + select_cols).select_from(joined).cte()
             self._index = other._index
             return
         if not other._is_mindex:
             idx = self._idx()
-            join_cond = other._idx_at(0) == self._idx_at(level)
+            join_cond = other._idx_at(0) == self._lvl_at(level)
             joined = self._cte.join(other._cte, join_cond, isouter=True)
             self._cte = sa.select(idx + select_cols).select_from(joined).cte()
             return
