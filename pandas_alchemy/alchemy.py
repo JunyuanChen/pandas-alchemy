@@ -264,6 +264,16 @@ class DataFrame(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
 
         self._app(app_func, inplace=True)
 
+    @utils.copied
+    def add_prefix(self, prefix):
+        columns = map(lambda c: prefix + str(c), self._columns)
+        self._columns = pd.Index(columns)
+
+    @utils.copied
+    def add_suffix(self, suffix):
+        columns = map(lambda c: str(c) + suffix, self._columns)
+        self._columns = pd.Index(columns)
+
     def to_pandas(self):
         index = []
         columns = []
@@ -440,6 +450,16 @@ class Series(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
     lt = series_cmp(operator.lt)
     ge = series_cmp(operator.ge)
     gt = series_cmp(operator.gt)
+
+    @utils.copied
+    def add_prefix(self, prefix):
+        idx = map(lambda i: sa.func.concat(prefix, i), self._idx())
+        self._cte = sa.select(idx + self._cols()).cte()
+
+    @utils.copied
+    def add_suffix(self, suffix):
+        idx = map(lambda i: sa.func.concat(i, suffix), self._idx())
+        self._cte = sa.select(idx + self._cols()).cte()
 
     def to_pandas(self):
         index = []

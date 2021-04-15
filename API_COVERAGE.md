@@ -1,4 +1,4 @@
-# Series \[41/331\] \[12%\]
+# Series \[43/331\] \[12%\]
 - [X] Series.index
 - [ ] Series.array
 - [ ] Series.values
@@ -140,8 +140,8 @@
 - [ ] Series.truncate
 - [ ] Series.where
 - [ ] Series.mask
-- [ ] Series.add\_prefix
-- [ ] Series.add\_suffix
+- [X] Series.add\_prefix
+- [X] Series.add\_suffix
 - [ ] Series.filter
 - [ ] Series.backfill
 - [ ] Series.bfill
@@ -331,7 +331,7 @@
 - [ ] Series.to\_latex
 - [ ] Series.to\_markdown
 
-# DataFrame \[44/223\] \[19%\]
+# DataFrame \[46/223\] \[20%\]
 - [X] DataFrame.index
 - [X] DataFrame.columns
 - [ ] DataFrame.dtypes
@@ -442,8 +442,8 @@
 - [ ] DataFrame.var
 - [ ] DataFrame.nunique
 - [ ] DataFrame.value\_counts
-- [ ] DataFrame.add\_prefix
-- [ ] DataFrame.add\_suffix
+- [X] DataFrame.add\_prefix
+- [X] DataFrame.add\_suffix
 - [ ] DataFrame.align
 - [ ] DataFrame.at\_time
 - [ ] DataFrame.between\_time
