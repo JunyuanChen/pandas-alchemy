@@ -78,6 +78,10 @@ class GenericMixin:
     def abs(self):
         self._app(sa.func.abs, inplace=True)
 
+    @utils.copied
+    def round(self, decimals=0, *args, **kwargs):
+        self._app(lambda c: sa.func.round(c, decimals), inplace=True)
+
     def pipe(self, func, *args, **kwargs):
         if callable(func):
             return func(self, *args, **kwargs)

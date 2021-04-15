@@ -1,4 +1,4 @@
-# Series \[40/331\] \[12%\]
+# Series \[41/331\] \[12%\]
 - [X] Series.index
 - [ ] Series.array
 - [ ] Series.values
@@ -55,7 +55,7 @@
 - [X] Series.rpow
 - [ ] Series.combine
 - [ ] Series.combine\_first
-- [ ] Series.round
+- [X] Series.round
 - [X] Series.lt
 - [X] Series.gt
 - [X] Series.le
@@ -331,7 +331,7 @@
 - [ ] Series.to\_latex
 - [ ] Series.to\_markdown
 
-# DataFrame \[43/223\] \[19%\]
+# DataFrame \[44/223\] \[19%\]
 - [X] DataFrame.index
 - [X] DataFrame.columns
 - [ ] DataFrame.dtypes
@@ -434,7 +434,7 @@
 - [ ] DataFrame.product
 - [ ] DataFrame.quantile
 - [ ] DataFrame.rank
-- [ ] DataFrame.round
+- [X] DataFrame.round
 - [ ] DataFrame.sem
 - [ ] DataFrame.skew
 - [ ] DataFrame.sum
