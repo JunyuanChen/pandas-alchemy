@@ -139,6 +139,32 @@ def sqlite_floor_function(con):
 
 
 @augment("sqlite")
+@with_raw_connection
+def sqlite_greatest_function(con):
+    def greatest_func(*args):
+        result = args[0]
+        for i in args:
+            if i is not None and i > result:
+                result = i
+        return result
+
+    con.create_function("greatest", -1, greatest_func)
+
+
+@augment("sqlite")
+@with_raw_connection
+def sqlite_least_function(con):
+    def least_func(*args):
+        result = args[0]
+        for i in args:
+            if i is not None and i < result:
+                result = i
+        return result
+
+    con.create_function("least", -1, least_func)
+
+
+@augment("sqlite")
 def sqlite_NA_adapters(engine):
     register = engine.dialect.dbapi.register_adapter
     register(pd.NA.__class__, lambda _: None)

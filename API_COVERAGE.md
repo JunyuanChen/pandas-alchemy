@@ -1,4 +1,4 @@
-# Series \[43/331\] \[12%\]
+# Series \[44/331\] \[13%\]
 - [X] Series.index
 - [ ] Series.array
 - [ ] Series.values
@@ -79,7 +79,7 @@
 - [ ] Series.any
 - [ ] Series.autocorr
 - [ ] Series.between
-- [ ] Series.clip
+- [X] Series.clip
 - [ ] Series.corr
 - [ ] Series.count
 - [ ] Series.cov
@@ -331,7 +331,7 @@
 - [ ] Series.to\_latex
 - [ ] Series.to\_markdown
 
-# DataFrame \[46/223\] \[20%\]
+# DataFrame \[47/223\] \[21%\]
 - [X] DataFrame.index
 - [X] DataFrame.columns
 - [ ] DataFrame.dtypes
@@ -409,7 +409,7 @@
 - [X] DataFrame.abs
 - [ ] DataFrame.all
 - [ ] DataFrame.any
-- [ ] DataFrame.clip
+- [X] DataFrame.clip
 - [ ] DataFrame.corr
 - [ ] DataFrame.corrwith
 - [ ] DataFrame.count

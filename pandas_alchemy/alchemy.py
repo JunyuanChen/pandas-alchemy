@@ -252,6 +252,16 @@ class DataFrame(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
     gt = dataframe_cmp(operator.gt)
 
     @utils.copied
+    def clip(self, lower=None, upper=None, axis=None, *args, **kwargs):
+        if axis is None:
+            if not pd.api.types.is_scalar(lower):
+                raise ValueError("Must specify axis=0 or 1")
+            if not pd.api.types.is_scalar(upper):
+                raise ValueError("Must specify axis=0 or 1")
+        self._op(sa.func.greatest, lower, axis=axis, inplace=True)
+        self._op(sa.func.least, upper, axis=axis, inplace=True)
+
+    @utils.copied
     def applymap(self, func, na_action=None):
         if na_action not in (None, 'ignore'):
             raise ValueError(f"na_action must be 'ignore' or None. "
@@ -379,7 +389,8 @@ class Series(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
             level=None,
             fill_value=None,
             axis=0,
-            reverse=False):
+            reverse=False,
+            lax=True):
         if axis is not None:
             # Since there is only one possible axis for Series,
             # we don't need to do anything besides validation.
@@ -413,7 +424,7 @@ class Series(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
                               fill_value=fill_value)
         if pd.api.types.is_list_like(other):
             other = list(other)
-            if len(other) == 1:
+            if lax and len(other) == 1:
                 col = app_op(self._the_col, other[0])
                 self._cte = sa.select(self._idx() + [col]).cte()
                 return
@@ -450,6 +461,11 @@ class Series(base.BaseFrame, generic.GenericMixin, ops_mixin.OpsMixin):
     lt = series_cmp(operator.lt)
     ge = series_cmp(operator.ge)
     gt = series_cmp(operator.gt)
+
+    @utils.copied
+    def clip(self, lower=None, upper=None, axis=None, *args, **kwargs):
+        self._op(sa.func.greatest, lower, axis=axis, inplace=True, lax=False)
+        self._op(sa.func.least, upper, axis=axis, inplace=True, lax=False)
 
     @utils.copied
     def add_prefix(self, prefix):
