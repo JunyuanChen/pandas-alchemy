@@ -83,11 +83,11 @@ class GenericMixin:
         self._app(lambda c: sa.func.round(c, decimals), inplace=True)
 
     def pipe(self, func, *args, **kwargs):
-        if callable(func):
-            return func(self, *args, **kwargs)
-        func, data_keyword = func
-        kwargs[data_keyword] = self
-        return func(*args, **kwargs)
+        if isinstance(func, tuple):
+            func, data_keyword = func
+            kwargs[data_keyword] = self
+            return func(*args, **kwargs)
+        return func(self, *args, **kwargs)
 
     isnull = isna
     notnull = notna
